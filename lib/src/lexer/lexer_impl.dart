@@ -53,7 +53,6 @@ class LexerImpl implements Lexer {
   final bool shouldParseComments;
   final Source _source;
   int _offset;
-  int _char;
   int _line;
   int _column;
 
@@ -71,9 +70,9 @@ class LexerImpl implements Lexer {
   }
 
   void _next() {
-    _char = _peek();
+    final code = _peek();
 
-    if (_char == -1) {
+    if (code == -1) {
       return;
     }
 
@@ -105,15 +104,15 @@ class LexerImpl implements Lexer {
   ///
   /// https://facebook.github.io/graphql/draft/#sec-Source-Text.Ignored-Tokens
   void skipWhitespace() {
-    int char;
+    int code;
 
     while (!_isEOF) {
-      char = _peek();
+      code = _peek();
 
-      if (char != 0xfeff /* BOM */ &&
-          char != 0x09 /* \t */ &&
-          char != 0x20 /* ` ` */ &&
-          char != 0x2c /* , */ &&
+      if (code != 0xfeff /* BOM */ &&
+          code != 0x09 /* \t */ &&
+          code != 0x20 /* ` ` */ &&
+          code != 0x2c /* , */ &&
           !_scanEol()) {
         break;
       }
@@ -244,7 +243,7 @@ class LexerImpl implements Lexer {
 
   int _scanEscapedUnicode() {
     final buffer = StringBuffer();
-    int char;
+    int code;
 
     // Look if enough bytes are provided.
     if (_peek(4) == -1) {
@@ -253,11 +252,11 @@ class LexerImpl implements Lexer {
 
     for (int _ = 0; _ < 4; _++) {
       _next();
-      char = _peek();
+      code = _peek();
 
-      if (isDigit(char) ||
-          (isLetter(char) && (char <= 0x46 /* F */ || char <= 0x66 /* f */))) {
-        buffer.writeCharCode(char);
+      if (isDigit(code) ||
+          (isLetter(code) && (code <= 0x46 /* F */ || code <= 0x66 /* f */))) {
+        buffer.writeCharCode(code);
 
         continue;
       }
@@ -265,10 +264,10 @@ class LexerImpl implements Lexer {
       throw SyntaxError('Unknown unicode escape sequence!');
     }
 
-    char = int.tryParse(buffer.toString(), radix: 16);
+    code = int.tryParse(buffer.toString(), radix: 16);
 
-    if (char != null) {
-      return String.fromCharCode(char).codeUnitAt(0);
+    if (code != null) {
+      return String.fromCharCode(code).codeUnitAt(0);
     }
 
     throw SyntaxError('Unknown unicode escape sequence!');
@@ -278,30 +277,30 @@ class LexerImpl implements Lexer {
   Token scanString() {
     final start = Position(offset: _offset, line: _line, column: _column);
     final buffer = StringBuffer();
-    int char;
+    int code;
 
     // skip leading quote.
     _next();
 
     while (!_isEOF) {
-      char = _peek();
+      code = _peek();
 
-      if (!isValidSourceChar(char)) {
+      if (!isValidSourceChar(code)) {
         throw SyntaxError('Invalid source character!');
       }
 
-      if (char == 0x22 /* " */) {
+      if (code == 0x22 /* " */) {
         _next();
 
         final end = Position(offset: _offset, line: _line, column: _column);
 
         return Token(TokenKind.stringValue, Spanning(start, end),
             value: buffer.toString());
-      } else if (char == 0x5c /* \ */) {
+      } else if (code == 0x5c /* \ */) {
         _next();
-        char = _peek();
+        code = _peek();
 
-        switch (char) {
+        switch (code) {
           case 0x22 /* " */ :
             buffer.writeCharCode(0x22);
             break;
@@ -333,10 +332,10 @@ class LexerImpl implements Lexer {
           default:
             throw SyntaxError('Invalid character escape sequence!');
         }
-      } else if (char == 0x0a /* \n */ || char == 0x0d /* \r */) {
+      } else if (code == 0x0a /* \n */ || code == 0x0d /* \r */) {
         throw SyntaxError('Unterminated string!');
       } else {
-        buffer.writeCharCode(char);
+        buffer.writeCharCode(code);
       }
 
       _next();
@@ -348,7 +347,7 @@ class LexerImpl implements Lexer {
   Token scanBlockString() {
     final start = Position(offset: _offset, line: _line, column: _column);
     final buffer = StringBuffer();
-    int char;
+    int code;
 
     // skipping leading """
     _next();
@@ -356,13 +355,13 @@ class LexerImpl implements Lexer {
     _next();
 
     while (!_isEOF) {
-      char = _peek();
+      code = _peek();
 
-      if (!isValidSourceChar(char)) {
+      if (!isValidSourceChar(code)) {
         throw SyntaxError('Invalid source character!');
       }
 
-      if (char == 0x5c /* \ */ &&
+      if (code == 0x5c /* \ */ &&
           _peek(1) == 0x22 /* " */ &&
           _peek(2) == 0x22 &&
           _peek(3) == 0x22) {
@@ -374,7 +373,7 @@ class LexerImpl implements Lexer {
         _next();
         _next();
         _next();
-      } else if (char == 0x22 /* " */ && _peek(1) == 0x22 && _peek(2) == 0x22) {
+      } else if (code == 0x22 /* " */ && _peek(1) == 0x22 && _peek(2) == 0x22) {
         // skip closing `"""`.
         _next();
         _next();
@@ -388,7 +387,7 @@ class LexerImpl implements Lexer {
       } else if (_scanEol()) {
         buffer.writeCharCode(0x0a /* \n */);
       } else {
-        buffer.writeCharCode(char);
+        buffer.writeCharCode(code);
       }
 
       _next();
@@ -404,17 +403,17 @@ class LexerImpl implements Lexer {
   Token scanIdent() {
     final buffer = StringBuffer();
     final start = Position(offset: _offset, line: _line, column: _column);
-    int char = _peek();
+    int code = _peek();
 
-    if (isLetter(char) || char == 0x5f /* _ */) {
+    if (isLetter(code) || code == 0x5f /* _ */) {
       while (!_isEOF) {
-        char = _peek();
+        code = _peek();
 
-        if (!isLetter(char) && !isDigit(char) && char != 0x5f) {
+        if (!isLetter(code) && !isDigit(code) && code != 0x5f) {
           break;
         }
 
-        buffer.writeCharCode(char);
+        buffer.writeCharCode(code);
         _next();
       }
 
@@ -430,18 +429,18 @@ class LexerImpl implements Lexer {
           value: TokenKind.isKeyword(kind) ? null : value.toString());
     }
 
-    throw SyntaxError('Unexpected source character $char in identifier!');
+    throw SyntaxError('Unexpected source character $code in identifier!');
   }
 
   Token scanToken() {
-    final char = _peek();
+    final code = _peek();
 
-    if (char < 0x20 && char != 0x09 && char != 0x0a && char != 0x0d) {
-      throw SyntaxError('Invalid source character $char');
-    } else if (char == 0x23 /* # */) {
+    if (code < 0x20 && code != 0x09 && code != 0x0a && code != 0x0d) {
+      throw SyntaxError('Invalid source character $code');
+    } else if (code == 0x23 /* # */) {
       return scanComment();
-    } else if (_punctuators.containsKey(char)) {
-      final kind = _punctuators[char];
+    } else if (_punctuators.containsKey(code)) {
+      final kind = _punctuators[code];
       final start = Position(offset: _offset, line: _line, column: _column);
 
       _next();
@@ -449,11 +448,11 @@ class LexerImpl implements Lexer {
       final end = Position(offset: _offset, line: _line, column: _column);
 
       return Token(kind, Spanning(start, end));
-    } else if (char == 0x2d /* - */ || isDigit(char)) {
+    } else if (code == 0x2d /* - */ || isDigit(code)) {
       return scanNumber();
-    } else if (isLetter(char) || char == 0x5f /* _ */) {
+    } else if (isLetter(code) || code == 0x5f /* _ */) {
       return scanIdent();
-    } else if (char == 0x2e /* . */) {
+    } else if (code == 0x2e /* . */) {
       if (_peek(1) == 0x2e && _peek(2) == 0x2e) {
         final start = Position(offset: _offset, line: _line, column: _column);
 
@@ -467,8 +466,8 @@ class LexerImpl implements Lexer {
         return Token(TokenKind.spread, Spanning(start, end));
       }
 
-      throw SyntaxError('Unexpected source character $char!');
-    } else if (char == 0x22 /* " */) {
+      throw SyntaxError('Unexpected source character $code!');
+    } else if (code == 0x22 /* " */) {
       if (_peek(1) == 0x22 && _peek(2) == 0x22) {
         return scanBlockString();
       }
@@ -476,7 +475,7 @@ class LexerImpl implements Lexer {
       return scanString();
     }
 
-    throw SyntaxError('Unexpected source character $char!');
+    throw SyntaxError('Unexpected source character $code!');
   }
 
   @override
