@@ -437,7 +437,11 @@ class LexerImpl implements Lexer {
 
     final code = _peek();
 
-    if (code < 0x20 && code != 0x09 && code != 0x0a && code != 0x0d) {
+    if (code == -1 /* EOF */) {
+      final pos = Position(offset: _offset, line: _line, column: _column);
+
+      return Token(TokenKind.eof, Spanning(pos, pos));
+    } else if (code < 0x20 && code != 0x09 && code != 0x0a && code != 0x0d) {
       throw SyntaxError('Invalid source character $code');
     } else if (code == 0x23 /* # */) {
       return scanComment();
