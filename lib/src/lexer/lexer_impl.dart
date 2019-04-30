@@ -433,6 +433,8 @@ class LexerImpl implements Lexer {
   }
 
   Token scanToken() {
+    skipWhitespace();
+
     final code = _peek();
 
     if (code < 0x20 && code != 0x09 && code != 0x0a && code != 0x0d) {
@@ -480,20 +482,18 @@ class LexerImpl implements Lexer {
 
   @override
   Iterable<Token> lex() sync* {
-    while (!_isEOF) {
-      skipWhitespace();
+    Token token;
 
-      final token = scanToken();
+    do {
+      token = scanToken();
 
-      // skip comments for now.
-      if (token.kind != TokenKind.comment) {
+      if (token.kind == TokenKind.comment) {
+        if (shouldParseComments) {
+          yield token;
+        }
+      } else {
         yield token;
       }
-    }
-
-    yield Token(
-        TokenKind.eof,
-        Spanning(Position(offset: _offset, line: _line, column: _column),
-            Position(offset: _offset, line: _line, column: _column)));
+    } while (token.kind != TokenKind.eof);
   }
 }
