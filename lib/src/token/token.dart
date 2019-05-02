@@ -26,6 +26,7 @@ class TokenKind {
 
   static const TokenKind bang = TokenKind._('!');
   static const TokenKind dollar = TokenKind._('\$');
+  static const TokenKind amp = TokenKind._('&');
   static const TokenKind parenl = TokenKind._('(');
   static const TokenKind parenr = TokenKind._(')');
   static const TokenKind spread = TokenKind._('...');
