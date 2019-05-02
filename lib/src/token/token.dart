@@ -56,7 +56,7 @@ class TokenKind {
   static const TokenKind typeKeyword = TokenKind._('type');
   static const TokenKind unionKeyword = TokenKind._('union');
 
-  /// Tests whether [kind] is some keyword kind.
+  /// Tests whether [kind] is a keyword kind.
   static bool isKeyword(TokenKind kind) {
     switch (kind) {
       case enumKeyword:
@@ -90,4 +90,11 @@ class Token {
 
   @override
   String toString() => 'Token(kind=$kind, value=$value, spanning=$spanning)';
+
+  /// Tests whether [token] is identifier.
+  static bool isIdent(Token token) =>
+      token.kind == TokenKind.ident || isKeyword(token);
+
+  /// Tests whether [token] is a keyword.
+  static bool isKeyword(Token token) => TokenKind.isKeyword(token.kind);
 }
