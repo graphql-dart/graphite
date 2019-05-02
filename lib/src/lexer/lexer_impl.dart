@@ -14,6 +14,7 @@ import 'package:graphite_language/src/lexer/utils.dart';
 const _punctuators = <int, TokenKind>{
   0x21: TokenKind.bang, // !
   0x24: TokenKind.dollar, // $
+  0x26: TokenKind.amp, // &
   0x28: TokenKind.parenl, // (
   0x29: TokenKind.parenr, // )
   0x3a: TokenKind.colon, // :
@@ -45,18 +46,19 @@ const _keywords = <String, TokenKind>{
 };
 
 class LexerImpl implements Lexer {
-  LexerImpl(this._source, {this.shouldParseComments = false})
+  LexerImpl(this.source, {this.shouldParseComments = false})
       : _offset = 0,
         _line = 1,
         _column = 1;
 
+  final Source source;
   final bool shouldParseComments;
-  final Source _source;
+
   int _offset;
   int _line;
   int _column;
 
-  String get _body => _source.body;
+  String get _body => source.body;
 
   /// Test whether it reaches end of the file.
   bool get _isEOF => _peek() == -1;
