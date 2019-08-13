@@ -284,37 +284,29 @@ class Parser {
     );
   }
 
-  ast.SelectionSet _parseSelectionSet() {
-    _expectToken(TokenKind.bracketl);
-    _eatToken();
+  ast.SelectionSet _parseSelectionSet() => ast.SelectionSet(
+      selections:
+          _many(TokenKind.bracketl, _parseSelection, TokenKind.bracketr));
 
-    final selections = <ast.Node>[];
+  ast.Node _parseSelection() {
+    switch (_peek().kind) {
+      case TokenKind.spread:
+        final next = _lookahead(1);
+        if (next.kind == TokenKind.name && next.value != Keyword.on) {
+          return _parseFragmentSpread();
+        } else {
+          return _parseInlineFragment();
+        }
+        break;
 
-    do {
-      switch (_peek().kind) {
-        case TokenKind.spread:
-          final next = _lookahead(1);
-          if (next.kind == TokenKind.name && next.value != Keyword.on) {
-            selections.add(_parseFragmentSpread());
-          } else {
-            selections.add(_parseInlineFragment());
-          }
-          break;
+      case TokenKind.name:
+        return _parseField();
+        break;
 
-        case TokenKind.name:
-          selections.add(_parseField());
-          break;
-
-        default:
-          throw Exception(
-              'Expected ${TokenKind.name} or ${TokenKind.spread} token, was ${_peek().kind}!');
-      }
-    } while (!_isKindOf(TokenKind.bracketr));
-
-    _expectToken(TokenKind.bracketr);
-    _eatToken();
-
-    return ast.SelectionSet(selections: selections);
+      default:
+        throw Exception(
+            'Expected ${TokenKind.name} or ${TokenKind.spread} token, was ${_peek().kind}!');
+    }
   }
 
   ast.InlineFragment _parseInlineFragment() {
