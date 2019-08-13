@@ -5,8 +5,7 @@
 // which can be found in the LICENSE file in the root directory of
 // this source tree.
 
-class SyntaxError extends Error {
-  SyntaxError(this.message) : super();
+library graphite.language.parser;
 
-  final String message;
-}
+export 'src/parser/interface.dart' if (dart.library.io) 'src/parser/io.dart';
+export 'src/parser/parser.dart' show Parser, parse;

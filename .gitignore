@@ -20,8 +20,3 @@
 pubspec.lock
 .dart_tool/
 doc/api
-
-# WIP
-lib/ast.dart
-lib/src/parser/
-lib/src/ast/
