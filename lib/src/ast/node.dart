@@ -47,6 +47,7 @@ enum NodeKind {
   fieldDefinition,
   inputValueDefinition,
   scalarTypeExtension,
+  interfaceTypeExtension,
   objectTypeExtension,
   inputObjectTypeExtension
 }
