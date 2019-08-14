@@ -84,6 +84,8 @@ part 'src/ast/input_object_type_definition.dart';
 
 part 'src/ast/scalar_type_extension.dart';
 
+part 'src/ast/interface_type_extension.dart';
+
 part 'src/ast/input_object_type_extension.dart';
 
 part 'src/ast/object_type_extension.dart';

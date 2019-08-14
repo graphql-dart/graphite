@@ -572,8 +572,53 @@ void main() {
       });
     });
 
+    group('InterfaceTypeExtension', () {
+      test('parses simple extension', () {
+        expect(() => convertSourceToMap('extend interface Foo'), throws);
+        expect(() => convertSourceToMap('extend interface Foo {}'), throws);
+        expect(
+            () => convertSourceToMap(
+                '"""Hello world""" extend interface Foo { HelloWorld: HelloWorld }'),
+            throws);
+
+        expect(
+            convertSourceToMap(
+                'extend interface Foo { bar: String, baz: HelloWorld }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InterfaceTypeExtension(name: 'Foo', fields: [
+                ast.FieldDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'String')),
+                ast.FieldDefinition(
+                    name: 'baz', type: ast.NamedType(name: 'HelloWorld')),
+              ])
+            ])));
+      });
+
+      test('parses extension with directives', () {
+        expect(
+            convertSourceToMap('extend interface Foo @foo @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InterfaceTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('extend interface Foo @foo { bar: String }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InterfaceTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo')
+              ], fields: [
+                ast.FieldDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'String'))
+              ])
+            ])));
+      });
+    });
+
     group('ObjectTypeExtension', () {
-      test('parses extension', () {
+      test('parses simple extension', () {
         expect(() => convertSourceToMap('extend type Foo'), throws);
 
         expect(

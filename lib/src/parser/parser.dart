@@ -709,8 +709,10 @@ class Parser {
       case Keyword.scalar:
         return _parseScalarTypeExtension();
 
-      case Keyword.type:
       case Keyword.interface:
+        return _parseInterfaceTypExtension();
+
+      case Keyword.type:
       case Keyword.union:
       case Keyword.kEnum:
       case Keyword.input:
@@ -727,6 +729,28 @@ class Parser {
     return ast.ScalarTypeExtension(
       name: _parseName(),
       directives: _parseDirectives(),
+    );
+  }
+
+  ast.InterfaceTypeExtension _parseInterfaceTypExtension() {
+    _expectKeywordToken(Keyword.extend);
+    _eatToken();
+    _expectKeywordToken(Keyword.interface);
+    _eatToken();
+
+    final name = _parseName();
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    final fields =
+        _isKindOf(TokenKind.bracketl) ? _parseFieldsDefinition() : null;
+
+    if (directives == null && fields == null) {
+      throw Exception('Expected either directives or field definitions!');
+    }
+
+    return ast.InterfaceTypeExtension(
+      name: name,
+      directives: directives,
+      fields: fields,
     );
   }
 }

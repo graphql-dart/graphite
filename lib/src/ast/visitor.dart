@@ -125,6 +125,9 @@ abstract class VisitorBase {
       case NodeKind.scalarTypeExtension:
         return visitScalarTypeExtension(node as ScalarTypeExtension);
 
+      case NodeKind.interfaceTypeExtension:
+        return visitInterfaceTypeExtension(node as InterfaceTypeExtension);
+
       case NodeKind.objectTypeExtension:
         return visitObjectTypeExtension(node as ObjectTypeExtension);
 
@@ -208,6 +211,8 @@ abstract class VisitorBase {
   void visitInputValueDefinition(InputValueDefinition node);
 
   void visitScalarTypeExtension(ScalarTypeExtension node);
+
+  void visitInterfaceTypeExtension(InterfaceTypeExtension node);
 
   void visitObjectTypeExtension(ObjectTypeExtension node);
 
