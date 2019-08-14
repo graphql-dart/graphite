@@ -21,9 +21,13 @@ enum NodeKind {
   inlineFragment,
   fragmentDefinition,
   selectionSet,
+
+  // Types
   namedType,
   listType,
   nonNullType,
+
+  // Values
   stringValue,
   booleanValue,
   enumValue,
@@ -33,8 +37,11 @@ enum NodeKind {
   objectValue,
   objectField,
   floatValue,
+
   typeCondition,
   operationType,
+
+  // Definitions
   schemaDefinition,
   rootOperationTypeDefinition,
   scalarTypeDefinition,
@@ -46,8 +53,11 @@ enum NodeKind {
   inputObjectTypeDefinition,
   fieldDefinition,
   inputValueDefinition,
+
+  // Extensions
   scalarTypeExtension,
   interfaceTypeExtension,
+  enumTypeExtension,
   objectTypeExtension,
   inputObjectTypeExtension
 }
