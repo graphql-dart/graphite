@@ -710,11 +710,13 @@ class Parser {
         return _parseScalarTypeExtension();
 
       case Keyword.interface:
-        return _parseInterfaceTypExtension();
+        return _parseInterfaceTypeExtension();
+
+      case Keyword.kEnum:
+        return _parseEnumTypeExtension();
 
       case Keyword.type:
       case Keyword.union:
-      case Keyword.kEnum:
       case Keyword.input:
         break;
     }
@@ -732,7 +734,7 @@ class Parser {
     );
   }
 
-  ast.InterfaceTypeExtension _parseInterfaceTypExtension() {
+  ast.InterfaceTypeExtension _parseInterfaceTypeExtension() {
     _expectKeywordToken(Keyword.extend);
     _eatToken();
     _expectKeywordToken(Keyword.interface);
@@ -751,6 +753,28 @@ class Parser {
       name: name,
       directives: directives,
       fields: fields,
+    );
+  }
+
+  ast.EnumTypeExtension _parseEnumTypeExtension() {
+    _expectKeywordToken(Keyword.extend);
+    _eatToken();
+    _expectKeywordToken(Keyword.kEnum);
+    _eatToken();
+
+    final name = _parseName();
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    final values =
+        _isKindOf(TokenKind.bracketl) ? _parseEnumValuesDefinition() : null;
+
+    if (directives == null && values == null) {
+      throw Exception('Expected either directives or field definitions!');
+    }
+
+    return ast.EnumTypeExtension(
+      name: name,
+      values: values,
+      directives: directives
     );
   }
 }

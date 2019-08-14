@@ -520,15 +520,12 @@ void main() {
 
       test('parses definition with directives', () {
         expect(
-            convertSourceToMap('enum FooBar @foo @bar @baz { FOO, BAR }'),
+            convertSourceToMap('enum FooBar @foo @bar @baz'),
             convertAstToMap(const ast.Document(definitions: [
               ast.EnumTypeDefinition(name: 'FooBar', directives: [
                 ast.Directive(name: 'foo'),
                 ast.Directive(name: 'bar'),
                 ast.Directive(name: 'baz')
-              ], values: [
-                ast.EnumValueDefinition(value: ast.EnumValue('FOO')),
-                ast.EnumValueDefinition(value: ast.EnumValue('BAR'))
               ])
             ])));
 
@@ -612,6 +609,68 @@ void main() {
               ], fields: [
                 ast.FieldDefinition(
                     name: 'bar', type: ast.NamedType(name: 'String'))
+              ])
+            ])));
+      });
+    });
+
+    group('EnumTypeExtension', () {
+      test('parses simple extension', () {
+        expect(() => convertSourceToMap('extend enum Foo'), throws);
+        expect(
+            () => convertSourceToMap(
+                '"""description""" extend enum Foo { bar: string }'),
+            throws);
+
+        expect(
+            convertSourceToMap('extend enum Direction {\n'
+                '  "North"'
+                ' NORTH\n'
+                ' EAST\n'
+                ' SOUTH\n'
+                ' WEST\n'
+                '}\n'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.EnumTypeExtension(name: 'Direction', values: [
+                ast.EnumValueDefinition(
+                    description: 'North', value: ast.EnumValue('NORTH')),
+                ast.EnumValueDefinition(value: ast.EnumValue('EAST')),
+                ast.EnumValueDefinition(value: ast.EnumValue('SOUTH')),
+                ast.EnumValueDefinition(value: ast.EnumValue('WEST'))
+              ])
+            ])));
+      });
+
+      test('parses definition with directives', () {
+        expect(() => convertSourceToMap('extend enum Foo { bar: Bar } @foo'),
+            throws);
+
+        expect(
+            convertSourceToMap('extend enum FooBar @foo @bar @baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.EnumTypeExtension(name: 'FooBar', directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar'),
+                ast.Directive(name: 'baz')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap(
+                'extend enum FooBar @xyz { FOO @foo, BAR @bar @baz }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.EnumTypeExtension(name: 'FooBar', directives: [
+                ast.Directive(name: 'xyz'),
+              ], values: [
+                ast.EnumValueDefinition(
+                    value: ast.EnumValue('FOO'),
+                    directives: [ast.Directive(name: 'foo')]),
+                ast.EnumValueDefinition(
+                    value: ast.EnumValue('BAR'),
+                    directives: [
+                      ast.Directive(name: 'bar'),
+                      ast.Directive(name: 'baz')
+                    ])
               ])
             ])));
       });

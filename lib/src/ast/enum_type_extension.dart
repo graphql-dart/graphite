@@ -7,25 +7,23 @@
 
 part of graphite.language.ast;
 
-/// https://graphql.github.io/graphql-spec/draft/#EnumTypeDefinition
-class EnumTypeDefinition extends Definition {
-  const EnumTypeDefinition(
-      {@required this.name, this.description, this.directives, this.values});
+/// https://graphql.github.io/graphql-spec/draft/#EnumTypeExtension
+class EnumTypeExtension extends Extension {
+  const EnumTypeExtension(
+      {@required this.name, this.directives, this.values});
 
   final String name;
-  final String description;
   final Iterable<Directive> directives;
   final Iterable<EnumValueDefinition> values;
 
   @override
-  NodeKind get kind => NodeKind.enumTypeDefinition;
+  NodeKind get kind => NodeKind.enumTypeExtension;
 
   @override
   Map<String, Object> toJson() => {
-        'kind': kind.toString(),
-        'description': description,
-        'name': name,
-        'directives': directives,
-        'values': values,
-      };
+    'kind': kind.toString(),
+    'name': name,
+    'directives': directives,
+    'values': values,
+  };
 }
