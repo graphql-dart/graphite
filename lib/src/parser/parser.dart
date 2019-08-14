@@ -629,8 +629,14 @@ class Parser {
         : null;
 
     _expectKeywordToken(Keyword.interface);
+    _eatToken();
 
-    return ast.InterfaceTypeDefinition();
+    return ast.InterfaceTypeDefinition(
+      description: description,
+      name: _parseName(),
+      directives: _isKindOf(TokenKind.at) ? _parseDirectives() : null,
+      fields: _isKindOf(TokenKind.bracketl) ? _parseFieldsDefinition() : null,
+    );
   }
 
   ast.Node _parseUnionTypeDefinition() {
