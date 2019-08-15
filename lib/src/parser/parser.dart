@@ -8,7 +8,7 @@
 import 'package:graphite_language/ast.dart' as ast;
 import 'package:graphite_language/lexer.dart' show Lexer;
 import 'package:graphite_language/token.dart'
-    show Source, Token, TokenKind, Keyword;
+    show Source, Token, TokenKind;
 
 class Parser {
   Parser(this.source);
@@ -26,20 +26,23 @@ class Parser {
 
   bool _isKindOf(TokenKind kind) => _peek().kind == kind;
 
-  void _expectToken(TokenKind kind) {
+  Token _expectToken(TokenKind kind) {
     if (!_isKindOf(kind)) {
       throw Exception(
           'Unexpected token, expected token of kind $kind, received ${_peek().kind}');
     }
+
+    return _advanceToken();
   }
 
-  void _expectKeywordToken(String keyword) {
-    _expectToken(TokenKind.name);
+  Token _expectIdent() {
+    final tok = _peek();
 
-    if (_peek().value != keyword) {
-      throw Exception(
-          'Unexpected token name, expected keyword $keyword, found ${_peek().value}');
+    if (!TokenKind.isIdentOrKeyword(tok.kind)) {
+      throw Exception('Expected identifier found ${tok.kind}!');
     }
+
+    return _advanceToken();
   }
 
   Token _advanceToken() => _tokens[_index++];
@@ -59,7 +62,6 @@ class Parser {
   Iterable<T> _many<T extends ast.Node>(
       TokenKind beginToken, T consume(), TokenKind endToken) {
     _expectToken(beginToken);
-    _eatToken();
 
     final nodes = <T>[];
 
@@ -87,11 +89,7 @@ class Parser {
     return _parseDocument();
   }
 
-  String _parseName() {
-    _expectToken(TokenKind.name);
-
-    return _advanceToken().value;
-  }
+  String _parseName() => _expectIdent().value;
 
   ast.Document _parseDocument() {
     final definitions = <ast.Node>[];
@@ -108,33 +106,33 @@ class Parser {
   ast.Node _parseDefinition() {
     final tok = _peek();
 
-    if (tok.kind == TokenKind.name) {
-      switch (tok.value) {
+    if (TokenKind.isKeyword(tok.kind)) {
+      switch (tok.kind) {
         // https://graphql.github.io/graphql-spec/draft/#ExecutableDefinition
         // ------------------------------------------------------------------
-        case Keyword.query:
-        case Keyword.mutation:
-        case Keyword.subscription:
+        case TokenKind.queryKeyword:
+        case TokenKind.mutationKeyword:
+        case TokenKind.subscriptionKeyword:
           return _parseOperationDefinition();
 
-        case Keyword.fragment:
+        case TokenKind.fragmentKeyword:
           return _parseFragmentDefinition();
 
         // https://graphql.github.io/graphql-spec/draft/#TypeSystemDefinition
         // ------------------------------------------------------------------
 
-        case Keyword.schema:
+        case TokenKind.schemaKeyword:
           return _parseSchemaDefinition();
 
-        case Keyword.scalar:
-        case Keyword.type:
-        case Keyword.interface:
-        case Keyword.union:
-        case Keyword.kEnum:
-        case Keyword.input:
+        case TokenKind.scalarKeyword:
+        case TokenKind.typeKeyword:
+        case TokenKind.interfaceKeyword:
+        case TokenKind.unionKeyword:
+        case TokenKind.enumKeyword:
+        case TokenKind.inputKeyword:
           return _parseTypeDefinition();
 
-        case Keyword.extend:
+        case TokenKind.extendKeyword:
           return _parseTypeExtension();
       }
     } else if (tok.kind == TokenKind.bracketl) {
@@ -144,73 +142,47 @@ class Parser {
       return _parseTypeDefinition();
     }
 
-    throw Exception('Unexpected token!');
+    throw Exception('Unexpected token ${tok}!');
   }
 
   ast.SchemaDefinition _parseSchemaDefinition() {
-    _expectKeywordToken(Keyword.schema);
-    _eatToken();
-
-    final definitions = <ast.RootOperationTypeDefinition>[];
-    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
-
-    _expectToken(TokenKind.bracketl);
-    _eatToken();
-
-    do {
-      definitions.add(_parseRootOperationTypeDefinition());
-    } while (_peek().kind != TokenKind.bracketr);
-
-    _eatToken();
+    _expectToken(TokenKind.schemaKeyword);
 
     return ast.SchemaDefinition(
-        definitions: definitions, directives: directives);
+        directives: _isKindOf(TokenKind.at) ? _parseDirectives() : null,
+        definitions: _many(TokenKind.bracketl,
+            _parseRootOperationTypeDefinition, TokenKind.bracketr));
   }
 
   ast.RootOperationTypeDefinition _parseRootOperationTypeDefinition() {
     final operation = _parseOperationType();
 
     _expectToken(TokenKind.colon);
-    _eatToken();
 
     return ast.RootOperationTypeDefinition(
         operation: operation, value: _parseNamedType());
   }
 
   ast.OperationType _parseOperationType() =>
-      ast.OperationType.fromString(_parseName());
+      ast.OperationType.fromTokenKind(_expectIdent().kind);
 
   ast.OperationDefinition _parseOperationDefinition() =>
       ast.OperationDefinition(
         operationType: _parseOperationType(),
-        name: _isKindOf(TokenKind.name) ? _parseName() : null,
+        name: TokenKind.isIdentOrKeyword(_peek().kind) ? _parseName() : null,
         variableDefinitions:
             _isKindOf(TokenKind.parenl) ? _parseVariableDefinitions() : null,
         directives: _isKindOf(TokenKind.at) ? _parseDirectives() : null,
         selectionSet: _parseSelectionSet(),
       );
 
-  Iterable<ast.VariableDefinition> _parseVariableDefinitions() {
-    _expectToken(TokenKind.parenl);
-    _eatToken();
-
-    final variableDefinitions = <ast.VariableDefinition>[];
-
-    do {
-      variableDefinitions.add(_parseVariableDefinition());
-    } while (!_isKindOf(TokenKind.parenr));
-
-    _expectToken(TokenKind.parenr);
-    _eatToken();
-
-    return variableDefinitions;
-  }
+  Iterable<ast.VariableDefinition> _parseVariableDefinitions() =>
+      _many(TokenKind.parenl, _parseVariableDefinition, TokenKind.parenr);
 
   ast.VariableDefinition _parseVariableDefinition() {
     final variable = _parseVariable();
 
     _expectToken(TokenKind.colon);
-    _eatToken();
 
     final type = _parseType();
 
@@ -232,7 +204,7 @@ class Parser {
     ast.Node type;
 
     switch (_peek().kind) {
-      case TokenKind.name:
+      case TokenKind.ident:
         type = _parseNamedType();
         break;
 
@@ -252,30 +224,20 @@ class Parser {
     return type;
   }
 
-  ast.NamedType _parseNamedType() {
-    _expectToken(TokenKind.name);
-
-    return ast.NamedType(name: _parseName());
-  }
+  ast.NamedType _parseNamedType() => ast.NamedType(name: _parseName());
 
   ast.ListType _parseListType() {
     _expectToken(TokenKind.bracel);
-    _eatToken();
 
     final type = ast.ListType(type: _parseType());
 
     _expectToken(TokenKind.bracer);
-    _eatToken();
 
     return type;
   }
 
   ast.FragmentDefinition _parseFragmentDefinition() {
-    _expectToken(TokenKind.name);
-
-    if (_peek().value != Keyword.fragment) {
-      throw Exception('Unexpected token name!');
-    }
+    _expectToken(TokenKind.fragmentKeyword);
 
     return ast.FragmentDefinition(
       name: _parseName(),
@@ -292,31 +254,30 @@ class Parser {
     switch (_peek().kind) {
       case TokenKind.spread:
         final next = _lookahead(1);
-        if (next.kind == TokenKind.name && next.value != Keyword.on) {
+        if (next.kind != TokenKind.onKeyword) {
           return _parseFragmentSpread();
         } else {
           return _parseInlineFragment();
         }
         break;
 
-      case TokenKind.name:
+      case TokenKind.ident:
         return _parseField();
         break;
 
       default:
         throw Exception(
-            'Expected ${TokenKind.name} or ${TokenKind.spread} token, was ${_peek().kind}!');
+            'Expected identifier or ${TokenKind.spread} token, was ${_peek().kind}!');
     }
   }
 
   ast.InlineFragment _parseInlineFragment() {
     _expectToken(TokenKind.spread);
-    _eatToken();
 
     final token = _peek();
     ast.TypeCondition typeCondition;
 
-    if (token.kind == TokenKind.name && token.value == Keyword.on) {
+    if (token.kind == TokenKind.onKeyword) {
       typeCondition = _parseTypeCondition();
     }
 
@@ -328,8 +289,7 @@ class Parser {
   }
 
   ast.TypeCondition _parseTypeCondition() {
-    _expectKeywordToken(Keyword.on);
-    _eatToken();
+    _expectToken(TokenKind.onKeyword);
 
     return ast.TypeCondition(name: _parseName());
   }
@@ -337,9 +297,7 @@ class Parser {
   ast.FragmentSpread _parseFragmentSpread() {
     _expectToken(TokenKind.spread);
 
-    final token = _advanceToken();
-
-    if (token.kind == TokenKind.name && token.value == Keyword.on) {
+    if (_isKindOf(TokenKind.onKeyword)) {
       throw Exception('Unexpected token name!');
     }
 
@@ -359,8 +317,6 @@ class Parser {
       );
 
   ast.Alias _parseAlias() {
-    _expectToken(TokenKind.name);
-
     final name = _parseName();
 
     _expectToken(TokenKind.colon);
@@ -368,27 +324,13 @@ class Parser {
     return ast.Alias(name: name);
   }
 
-  Iterable<ast.Argument> _parseArguments() {
-    _expectToken(TokenKind.parenl);
-    _eatToken();
-
-    final arguments = <ast.Argument>[];
-
-    do {
-      arguments.add(_parseArgument());
-    } while (!_isKindOf(TokenKind.parenr));
-
-    _expectToken(TokenKind.parenr);
-    _eatToken();
-
-    return arguments;
-  }
+  Iterable<ast.Argument> _parseArguments() =>
+      _many(TokenKind.parenl, _parseArgument, TokenKind.parenr);
 
   ast.Argument _parseArgument() {
     final name = _parseName();
 
     _expectToken(TokenKind.colon);
-    _advanceToken();
 
     return ast.Argument(name: name, value: _parseValue());
   }
@@ -409,68 +351,55 @@ class Parser {
       case TokenKind.stringValue:
         return ast.StringValue(_advanceToken().value);
 
-      case TokenKind.name:
-        if (token.value == Keyword.kNull) {
-          return const ast.NullValue(null);
-        } else if (token.value == Keyword.kTrue ||
-            token.value == Keyword.kFalse) {
-          return ast.BooleanValue(_advanceToken().value == Keyword.kTrue);
-        }
+      case TokenKind.nullKeyword:
+        return const ast.NullValue(null);
+      case TokenKind.trueKeyword:
+        return const ast.BooleanValue(true);
+      case TokenKind.falseKeyword:
+        return const ast.BooleanValue(false);
 
         return _parseEnumValue();
 
       case TokenKind.bracel:
-        _eatToken();
-
         final values = <ast.Node>[];
 
         do {
           values.add(_parseValue(isConst: isConst));
         } while (_isKindOf(TokenKind.bracer));
 
-        _eatToken();
-
         return ast.ListValue(values);
 
       case TokenKind.bracketl:
-        _eatToken();
-
-        final fields = <ast.ObjectField>[];
-
-        do {
-          fields.add(ast.ObjectField(
-            name: _parseName(),
-            value: _parseValue(isConst: isConst),
-          ));
-        } while (_isKindOf(TokenKind.bracketr));
-
-        _eatToken();
+        final fields = _many(
+            TokenKind.bracketl,
+            () => ast.ObjectField(
+                  name: _parseName(),
+                  value: _parseValue(isConst: isConst),
+                ),
+            TokenKind.bracketr);
 
         return ast.ObjectValue(fields);
     }
 
-    throw Exception('Unexpected token!');
+    throw Exception('Unexpected token ${token}!');
   }
 
   ast.EnumValue _parseEnumValue() {
-    _expectToken(TokenKind.name);
+    final tok = _expectIdent();
 
-    final name = _peek().value;
-
-    switch (name) {
-      case Keyword.kNull:
-      case Keyword.kTrue:
-      case Keyword.kFalse:
+    switch (tok.kind) {
+      case TokenKind.nullKeyword:
+      case TokenKind.trueKeyword:
+      case TokenKind.falseKeyword:
         throw Exception('Unexpected token!');
 
       default:
-        return ast.EnumValue(_advanceToken().value);
+        return ast.EnumValue(tok.value);
     }
   }
 
   ast.Variable _parseVariable() {
     _expectToken(TokenKind.dollar);
-    _eatToken();
 
     return ast.Variable(name: _parseName());
   }
@@ -487,11 +416,10 @@ class Parser {
 
   ast.Directive _parseDirective() {
     _expectToken(TokenKind.at);
-    _eatToken();
 
     return ast.Directive(
       name: _parseName(),
-      arguments: _isKindOf(TokenKind.bracel) ? _parseArguments() : null,
+      arguments: _isKindOf(TokenKind.parenl) ? _parseArguments() : null,
     );
   }
 
@@ -500,25 +428,24 @@ class Parser {
         _isKindOf(TokenKind.blockStringValue);
     final tok = hasDescription ? _lookahead(1) : _peek();
 
-    switch (tok.value) {
-      case Keyword.scalar:
+    switch (tok.kind) {
+      case TokenKind.scalarKeyword:
         return _parseScalarTypeDefinition();
-        break;
-      case Keyword.type:
+
+      case TokenKind.typeKeyword:
         return _parseObjectTypeDefinition();
-        break;
-      case Keyword.interface:
+
+      case TokenKind.interfaceKeyword:
         return _parseInterfaceTypeDefinition();
-        break;
-      case Keyword.union:
+
+      case TokenKind.unionKeyword:
         return _parseUnionTypeDefinition();
-        break;
-      case Keyword.kEnum:
+
+      case TokenKind.enumKeyword:
         return _parseEnumTypeDefinition();
-        break;
-      case Keyword.input:
+
+      case TokenKind.inputKeyword:
         return _parseInputTypeDefinition();
-        break;
     }
 
     throw Exception('Unexpected keyword!');
@@ -530,8 +457,7 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.scalar);
-    _eatToken();
+    _expectToken(TokenKind.scalarKeyword);
 
     return ast.ScalarTypeDefinition(
       name: _parseName(),
@@ -546,14 +472,12 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.type);
-    _eatToken();
+    _expectToken(TokenKind.typeKeyword);
 
     final name = _parseName();
     List<ast.NamedType> interfaces;
 
-    if (_isKindOf(TokenKind.name) && _peek().value == Keyword.implements) {
-      _eatToken();
+    if (_isOptionalKindOf(TokenKind.implementsKeyword)) {
       interfaces = [];
 
       // Optional leading ampersand. WTF spec?
@@ -588,7 +512,6 @@ class Parser {
         _isKindOf(TokenKind.parenl) ? _parseArgumentsDefinition() : null;
 
     _expectToken(TokenKind.colon);
-    _eatToken();
 
     return ast.FieldDefinition(
       description: description,
@@ -610,7 +533,6 @@ class Parser {
     final name = _parseName();
 
     _expectToken(TokenKind.colon);
-    _eatToken();
 
     return ast.InputValueDefinition(
       description: description,
@@ -628,8 +550,7 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.interface);
-    _eatToken();
+    _expectToken(TokenKind.interfaceKeyword);
 
     return ast.InterfaceTypeDefinition(
       description: description,
@@ -645,8 +566,7 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.union);
-
+    _expectToken(TokenKind.unionKeyword);
     return ast.UnionTypeDefinition();
   }
 
@@ -656,8 +576,7 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.kEnum);
-    _eatToken();
+    _expectToken(TokenKind.enumKeyword);
 
     return ast.EnumTypeDefinition(
       description: description,
@@ -690,8 +609,7 @@ class Parser {
         ? _parseDescription()
         : null;
 
-    _expectKeywordToken(Keyword.input);
-
+    _expectToken(TokenKind.inputKeyword);
     return ast.InputObjectTypeDefinition();
   }
 
@@ -705,28 +623,26 @@ class Parser {
   }
 
   ast.Node _parseTypeExtension() {
-    switch (_lookahead(1).value) {
-      case Keyword.scalar:
+    switch (_lookahead(1).kind) {
+      case TokenKind.scalarKeyword:
         return _parseScalarTypeExtension();
 
-      case Keyword.interface:
+      case TokenKind.interfaceKeyword:
         return _parseInterfaceTypeExtension();
 
-      case Keyword.kEnum:
+      case TokenKind.enumKeyword:
         return _parseEnumTypeExtension();
 
-      case Keyword.type:
-      case Keyword.union:
-      case Keyword.input:
+      case TokenKind.typeKeyword:
+      case TokenKind.unionKeyword:
+      case TokenKind.inputKeyword:
         break;
     }
   }
 
   ast.ScalarTypeExtension _parseScalarTypeExtension() {
-    _expectKeywordToken(Keyword.extend);
-    _eatToken();
-    _expectKeywordToken(Keyword.scalar);
-    _eatToken();
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.scalarKeyword);
 
     return ast.ScalarTypeExtension(
       name: _parseName(),
@@ -735,10 +651,8 @@ class Parser {
   }
 
   ast.InterfaceTypeExtension _parseInterfaceTypeExtension() {
-    _expectKeywordToken(Keyword.extend);
-    _eatToken();
-    _expectKeywordToken(Keyword.interface);
-    _eatToken();
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.interfaceKeyword);
 
     final name = _parseName();
     final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
@@ -757,10 +671,8 @@ class Parser {
   }
 
   ast.EnumTypeExtension _parseEnumTypeExtension() {
-    _expectKeywordToken(Keyword.extend);
-    _eatToken();
-    _expectKeywordToken(Keyword.kEnum);
-    _eatToken();
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.enumKeyword);
 
     final name = _parseName();
     final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
@@ -772,10 +684,7 @@ class Parser {
     }
 
     return ast.EnumTypeExtension(
-      name: name,
-      values: values,
-      directives: directives
-    );
+        name: name, values: values, directives: directives);
   }
 }
 
