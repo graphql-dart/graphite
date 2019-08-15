@@ -12,36 +12,20 @@ import 'package:test/test.dart';
 import 'package:graphite_language/lexer.dart';
 import 'package:graphite_language/token.dart';
 
-import 'package:graphite_language/errors.dart' show SyntaxError;
+import 'package:graphite_language/exceptions.dart' show SyntaxException;
 
-Iterable<Token> lex(String body) {
-  final lexer = Lexer(Source(body: body));
+Iterable<Token> lex(String body,
+    // ignore: avoid_positional_boolean_parameters
+    [bool shouldHighlightSourceInExceptions = false]) {
+  final lexer = Lexer(Source(body: body),
+      shouldHighlightSourceInExceptions: shouldHighlightSourceInExceptions);
 
   return lexer.lex();
 }
 
-Token lexOne(String body) => lex(body).first;
-
-void expectPosition(Position current, Position expected) {
-  expect(current.offset, expected.offset);
-  expect(current.line, expected.line);
-  expect(current.column, expected.column);
-}
-
-void expectSpanning(Spanning current, Spanning expected) {
-  expectPosition(current.start, expected.start);
-  expectPosition(current.end, expected.end);
-}
-
-void expectToken(Token current, Token expected, {bool skip = false}) {
-  if (skip) {
-    return;
-  }
-
-  expect(current.kind, expected.kind);
-  expect(current.value, expected.value);
-  expectSpanning(current.spanning, expected.spanning);
-}
+// ignore: avoid_positional_boolean_parameters
+Token lexOne(String body, [bool shouldHighlightSourceInExceptions = false]) =>
+    lex(body, shouldHighlightSourceInExceptions).first;
 
 void main() {
   group('Punctuators', () {
@@ -49,33 +33,36 @@ void main() {
       const expectedSpanning = Spanning(Position(offset: 0, line: 1, column: 1),
           Position(offset: 1, line: 1, column: 2));
 
-      expectToken(lexOne('!'), const Token(TokenKind.bang, expectedSpanning));
-      expectToken(
-          lexOne('\$'), const Token(TokenKind.dollar, expectedSpanning));
-      expectToken(lexOne('('), const Token(TokenKind.parenl, expectedSpanning));
-      expectToken(lexOne(')'), const Token(TokenKind.parenr, expectedSpanning));
-      expectToken(lexOne(':'), const Token(TokenKind.colon, expectedSpanning));
-      expectToken(lexOne('='), const Token(TokenKind.eq, expectedSpanning));
-      expectToken(lexOne('@'), const Token(TokenKind.at, expectedSpanning));
-      expectToken(lexOne('['), const Token(TokenKind.bracel, expectedSpanning));
-      expectToken(lexOne(']'), const Token(TokenKind.bracer, expectedSpanning));
-      expectToken(
-          lexOne('{'), const Token(TokenKind.bracketl, expectedSpanning));
-      expectToken(lexOne('|'), const Token(TokenKind.pipe, expectedSpanning));
-      expectToken(
-          lexOne('}'), const Token(TokenKind.bracketr, expectedSpanning));
-      expectToken(
+      expect(lexOne('!'), const Token(TokenKind.bang, expectedSpanning));
+      expect(lexOne('\$'), const Token(TokenKind.dollar, expectedSpanning));
+      expect(lexOne('('), const Token(TokenKind.parenl, expectedSpanning));
+      expect(lexOne(')'), const Token(TokenKind.parenr, expectedSpanning));
+      expect(lexOne(':'), const Token(TokenKind.colon, expectedSpanning));
+      expect(lexOne('='), const Token(TokenKind.eq, expectedSpanning));
+      expect(lexOne('@'), const Token(TokenKind.at, expectedSpanning));
+      expect(lexOne('['), const Token(TokenKind.bracel, expectedSpanning));
+      expect(lexOne(']'), const Token(TokenKind.bracer, expectedSpanning));
+      expect(lexOne('{'), const Token(TokenKind.bracketl, expectedSpanning));
+      expect(lexOne('|'), const Token(TokenKind.pipe, expectedSpanning));
+      expect(lexOne('}'), const Token(TokenKind.bracketr, expectedSpanning));
+      expect(
           lexOne('...'),
           const Token(
               TokenKind.spread,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 3, line: 1, column: 4))));
+      expect(
+          lex('{...}').elementAt(2),
+          const Token(
+              TokenKind.bracketr,
+              Spanning(Position(offset: 4, line: 1, column: 5),
+                  Position(offset: 5, line: 1, column: 6))));
     });
   });
 
   group('whitespace', () {
     test('accepts BOM header', () {
-      expectToken(
+      expect(
           lexOne('\ufeff@'),
           const Token(
               TokenKind.at,
@@ -84,7 +71,7 @@ void main() {
     });
 
     test('tracks line and column', () {
-      expectToken(
+      expect(
           lexOne('\n\r\n\r@\n'),
           const Token(
               TokenKind.at,
@@ -93,14 +80,14 @@ void main() {
     });
 
     test('skips whitespace and comments', () {
-      expectToken(
+      expect(
           lexOne('\n \r \r\n # @    \n@\n\n'),
           const Token(
               TokenKind.at,
               Spanning(Position(offset: 15, line: 5, column: 1),
                   Position(offset: 16, line: 5, column: 2))));
 
-      expectToken(
+      expect(
           lexOne('# comment'),
           const Token(
               TokenKind.eof,
@@ -109,7 +96,7 @@ void main() {
     });
 
     test('skips insignificant comma', () {
-      expectToken(
+      expect(
           lexOne(',,,,@,,,,'),
           const Token(
               TokenKind.at,
@@ -119,7 +106,7 @@ void main() {
   });
 
   test('lexes numbers', () {
-    expectToken(
+    expect(
         lexOne('0'),
         const Token(
             TokenKind.integerValue,
@@ -127,7 +114,7 @@ void main() {
                 Position(offset: 1, line: 1, column: 2)),
             value: '0'));
 
-    expectToken(
+    expect(
         lexOne('52321'),
         const Token(
             TokenKind.integerValue,
@@ -135,7 +122,7 @@ void main() {
                 Position(offset: 5, line: 1, column: 6)),
             value: '52321'));
 
-    expectToken(
+    expect(
         lexOne('-52'),
         const Token(
             TokenKind.integerValue,
@@ -143,7 +130,7 @@ void main() {
                 Position(offset: 3, line: 1, column: 4)),
             value: '-52'));
 
-    expectToken(
+    expect(
         lexOne('-123123'),
         const Token(
             TokenKind.integerValue,
@@ -151,7 +138,7 @@ void main() {
                 Position(offset: 7, line: 1, column: 8)),
             value: '-123123'));
 
-    expectToken(
+    expect(
         lexOne('-52e6'),
         const Token(
             TokenKind.floatValue,
@@ -159,7 +146,7 @@ void main() {
                 Position(offset: 5, line: 1, column: 6)),
             value: '-52e6'));
 
-    expectToken(
+    expect(
         lexOne('3.14'),
         const Token(
             TokenKind.floatValue,
@@ -167,7 +154,7 @@ void main() {
                 Position(offset: 4, line: 1, column: 5)),
             value: '3.14'));
 
-    expectToken(
+    expect(
         lexOne('-52.234'),
         const Token(
             TokenKind.floatValue,
@@ -175,7 +162,7 @@ void main() {
                 Position(offset: 7, line: 1, column: 8)),
             value: '-52.234'));
 
-    expectToken(
+    expect(
         lexOne('5.1222e6'),
         const Token(
             TokenKind.floatValue,
@@ -183,7 +170,7 @@ void main() {
                 Position(offset: 8, line: 1, column: 9)),
             value: '5.1222e6'));
 
-    expectToken(
+    expect(
         lexOne('5.1e+2'),
         const Token(
             TokenKind.floatValue,
@@ -191,7 +178,7 @@ void main() {
                 Position(offset: 6, line: 1, column: 7)),
             value: '5.1e+2'));
 
-    expectToken(
+    expect(
         lexOne('-5.1e+245'),
         const Token(
             TokenKind.floatValue,
@@ -199,7 +186,7 @@ void main() {
                 Position(offset: 9, line: 1, column: 10)),
             value: '-5.1e+245'));
 
-    expectToken(
+    expect(
         lexOne('-5e-2'),
         const Token(
             TokenKind.floatValue,
@@ -207,7 +194,7 @@ void main() {
                 Position(offset: 5, line: 1, column: 6)),
             value: '-5e-2'));
 
-    expectToken(
+    expect(
         lexOne('\n,\n    \n-1042345.000e+21 \r, ,,,  '),
         const Token(
             TokenKind.floatValue,
@@ -215,19 +202,22 @@ void main() {
                 Position(offset: 24, line: 4, column: 17)),
             value: '-1042345.000e+21'));
 
-    expect(() => lexOne('00'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('0123123'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('1..00'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('2e'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('2e++32'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('2.'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('.1'), throwsA(const TypeMatcher<SyntaxError>()));
-    expect(() => lexOne('1.F'), throwsA(const TypeMatcher<SyntaxError>()));
+    expect(() => lexOne('00'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('0123123'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('1..00'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('2e'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('2e++32'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('2.'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('.1'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('1.F'), throwsA(const TypeMatcher<SyntaxException>()));
   });
 
   group('String', () {
     test('lexes string', () {
-      expectToken(
+      expect(
           lexOne('""'),
           const Token(
               TokenKind.stringValue,
@@ -235,7 +225,7 @@ void main() {
                   Position(offset: 2, line: 1, column: 3)),
               value: ''));
 
-      expectToken(
+      expect(
           lexOne('"hello world"'),
           const Token(
               TokenKind.stringValue,
@@ -243,15 +233,17 @@ void main() {
                   Position(offset: 13, line: 1, column: 14)),
               value: 'hello world'));
 
-      expectToken(
+      expect(
           lexOne('" with space "'),
           const Token(
               TokenKind.stringValue,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 14, line: 1, column: 15)),
               value: ' with space '));
+    });
 
-      expectToken(
+    test('lexes escape sequence', () {
+      expect(
           lexOne('"with quote \\""'),
           const Token(
               TokenKind.stringValue,
@@ -259,7 +251,7 @@ void main() {
                   Position(offset: 15, line: 1, column: 16)),
               value: 'with quote "'));
 
-      expectToken(
+      expect(
           lexOne('"\\\\"'),
           const Token(
               TokenKind.stringValue,
@@ -267,7 +259,7 @@ void main() {
                   Position(offset: 4, line: 1, column: 5)),
               value: '\\'));
 
-      expectToken(
+      expect(
           lexOne('"\\b"'),
           const Token(
               TokenKind.stringValue,
@@ -275,7 +267,7 @@ void main() {
                   Position(offset: 4, line: 1, column: 5)),
               value: '\b'));
 
-      expectToken(
+      expect(
           lexOne('"\\f"'),
           const Token(
               TokenKind.stringValue,
@@ -283,7 +275,7 @@ void main() {
                   Position(offset: 4, line: 1, column: 5)),
               value: '\f'));
 
-      expectToken(
+      expect(
           lexOne('"\\r"'),
           const Token(
               TokenKind.stringValue,
@@ -291,7 +283,7 @@ void main() {
                   Position(offset: 4, line: 1, column: 5)),
               value: '\r'));
 
-      expectToken(
+      expect(
           lexOne('"\\t"'),
           const Token(
               TokenKind.stringValue,
@@ -299,7 +291,7 @@ void main() {
                   Position(offset: 4, line: 1, column: 5)),
               value: '\t'));
 
-      expectToken(
+      expect(
           lexOne('"combined escape \\" \\\\\\\\/\\b\\f\\n\\r\\t"'),
           const Token(
               TokenKind.stringValue,
@@ -307,7 +299,7 @@ void main() {
                   Position(offset: 36, line: 1, column: 37)),
               value: 'combined escape " \\\\/\b\f\n\r\t'));
 
-      expectToken(
+      expect(
           lexOne('"with unicode \\u1234\\u5678\\u90aB\\uCdEf"'),
           const Token(
               TokenKind.stringValue,
@@ -315,37 +307,71 @@ void main() {
                   Position(offset: 39, line: 1, column: 40)),
               value: 'with unicode ሴ噸邫췯'));
 
-      // SKIPPED!
-      expectToken(
+      expect(
           lexOne('"\\ude40"'),
           const Token(
               TokenKind.stringValue,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 7, line: 1, column: 8)),
-              value: '🙀'),
-          skip: true);
+                  Position(offset: 8, line: 1, column: 9)),
+              value: '\ude40'));
 
-      expect(() => lexOne('"\\x"'), throwsA(const TypeMatcher<SyntaxError>()));
-      expect(() => lexOne('"\\z"'), throwsA(const TypeMatcher<SyntaxError>()));
-      expect(() => lexOne('"\\u"'), throwsA(const TypeMatcher<SyntaxError>()));
       expect(
-          () => lexOne('"\\uXXXX"'), throwsA(const TypeMatcher<SyntaxError>()));
-      expect(() => lexOne('"\\u1"'), throwsA(const TypeMatcher<SyntaxError>()));
+          () => lexOne('"\\x"'), throwsA(const TypeMatcher<SyntaxException>()));
       expect(
-          () => lexOne('"\\u12"'), throwsA(const TypeMatcher<SyntaxError>()));
+          () => lexOne('"\\z"'), throwsA(const TypeMatcher<SyntaxException>()));
       expect(
-          () => lexOne('"\\u123"'), throwsA(const TypeMatcher<SyntaxError>()));
+          () => lexOne('"\\u"'), throwsA(const TypeMatcher<SyntaxException>()));
+      expect(() => lexOne('"\\uXXXX"'),
+          throwsA(const TypeMatcher<SyntaxException>()));
+      expect(() => lexOne('"\\u1"'),
+          throwsA(const TypeMatcher<SyntaxException>()));
+      expect(() => lexOne('"\\u12"'),
+          throwsA(const TypeMatcher<SyntaxException>()));
+      expect(() => lexOne('"\\u123"'),
+          throwsA(const TypeMatcher<SyntaxException>()));
 
-      expect(() => lexOne('"unterminated string'),
-          throwsA(const TypeMatcher<SyntaxError>()));
-      expect(() => lexOne('"unterminated string\n"'),
-          throwsA(const TypeMatcher<SyntaxError>()));
+      expect(
+          () => lex(
+              'query {\n'
+              '    user(username: "\\u123") {\n'
+              '        firstName,\n'
+              '        lastName\n'
+              '    }\n'
+              '}\n',
+              true),
+          throwsA(predicate<SyntaxException>((e) =>
+              e.toString() ==
+              'SyntaxException: Unknown unicode escape sequence: "\\u123"\n'
+                  '1| query {\n'
+                  '2|     user(username: "\\u123") {\n'
+                  '                       ^^^^^\n'
+                  '3|         firstName,\n\n')));
+    });
+
+    test('throws on invalid source characters', () {
+      expect(() => lexOne('"${utf8.decode([0x19, 0x18])}"'),
+          throwsA(const TypeMatcher<SyntaxException>()));
+    });
+
+    test('throws on unterminated strings', () {
+      expect(
+          () => lexOne('"unterminated string'),
+          throwsA(predicate<SyntaxException>(
+              (e) => e.message == 'Unterminated string!')));
+
+      expect(
+          () => lexOne('"unterminated string\n"'),
+          throwsA(predicate<SyntaxException>(
+              (e) => e.message == 'Unterminated string!')));
+
       expect(() => lexOne('"unterminated string\r"'),
-          throwsA(const TypeMatcher<SyntaxError>()));
+          throwsA(const TypeMatcher<SyntaxException>()));
+
       expect(() => lexOne('"unterminated string\r\n"'),
-          throwsA(const TypeMatcher<SyntaxError>()));
+          throwsA(const TypeMatcher<SyntaxException>()));
+
       expect(() => lexOne('"unterminated string\r\n"'),
-          throwsA(const TypeMatcher<SyntaxError>()));
+          throwsA(const TypeMatcher<SyntaxException>()));
     });
   });
 
@@ -354,13 +380,16 @@ void main() {
       // Only valid source characters: /[\u0009\u000A\u000D\u0020-\uFFFF]/
       // https://graphql.github.io/graphql-spec/draft/#SourceCharacter
 
-      expect(() => lexOne('"""${utf8.decode([0x19, 0x18])}"""'),
-          throwsA(const TypeMatcher<SyntaxError>()));
+      expect(
+          () => lexOne('"""\u0019\u0018"""'),
+          throwsA(predicate<SyntaxException>(
+              (e) => e.message == 'Invalid source character: "\u0019"')));
+
       expect(() => lexOne('"""${utf8.decode([0x09])}"""'), returnsNormally);
     });
 
     test('lexes empty string', () {
-      expectToken(
+      expect(
           lexOne('""""""'),
           const Token(
               TokenKind.blockStringValue,
@@ -370,7 +399,7 @@ void main() {
     });
 
     test('skips escaped triple-quotes', () {
-      expectToken(
+      expect(
           lexOne('"""\\""""""'),
           const Token(
               TokenKind.blockStringValue,
@@ -378,7 +407,7 @@ void main() {
                   Position(offset: 10, line: 1, column: 11)),
               value: '"""'));
 
-      expectToken(
+      expect(
           lexOne('"""\\"""\\"""asd\\""""""'),
           const Token(
               TokenKind.blockStringValue,
@@ -388,7 +417,7 @@ void main() {
     });
 
     test('correctly lexes slashes', () {
-      expectToken(
+      expect(
           lexOne('"""\\\\\\\\\\\\/\\b\\b"""'),
           const Token(
               TokenKind.blockStringValue,
@@ -398,7 +427,7 @@ void main() {
     });
 
     test('correctly handles newlines', () {
-      expectToken(
+      expect(
           lexOne('"""\r\n\n\rblock string\r"""'),
           const Token(
               TokenKind.blockStringValue,
@@ -406,7 +435,7 @@ void main() {
                   Position(offset: 23, line: 5, column: 4)),
               value: 'block string'));
 
-      expectToken(
+      expect(
           lexOne('"""block\r""\\"string"""'),
           const Token(
               TokenKind.blockStringValue,
@@ -414,7 +443,7 @@ void main() {
                   Position(offset: 22, line: 2, column: 14)),
               value: 'block\n""\\"string'));
 
-      expectToken(
+      expect(
           lexOne('''"""
           
           
@@ -426,7 +455,7 @@ void main() {
                   Position(offset: 50, line: 5, column: 14)),
               value: ''));
 
-      expectToken(
+      expect(
           lexOne('''"""
 
             multi
@@ -441,7 +470,7 @@ void main() {
     });
 
     test('does not accidentally eat other tokens', () {
-      expectToken(
+      expect(
           lex('"""\n\r\nfloat check\n       \n"""3213.41e23').elementAt(1),
           const Token(
               TokenKind.floatValue,
@@ -449,7 +478,7 @@ void main() {
                   Position(offset: 39, line: 5, column: 14)),
               value: '3213.41e23'));
 
-      expectToken(
+      expect(
           lexOne('"""at"""@'),
           const Token(
               TokenKind.blockStringValue,
@@ -461,151 +490,166 @@ void main() {
 
   group('Keywords', () {
     test('lexes correctly', () {
-      expectToken(
+      expect(
           lexOne('enum'),
           const Token(
-              TokenKind.enumKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5))));
+                  Position(offset: 4, line: 1, column: 5)),
+              value: 'enum'));
 
-      expectToken(
+      expect(
           lexOne('extend'),
           const Token(
-              TokenKind.extendKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7))));
+                  Position(offset: 6, line: 1, column: 7)),
+              value: 'extend'));
 
-      expectToken(
+      expect(
           lexOne('fragment'),
           const Token(
-              TokenKind.fragmentKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 8, line: 1, column: 9))));
+                  Position(offset: 8, line: 1, column: 9)),
+              value: 'fragment'));
 
-      expectToken(
+      expect(
           lexOne('implements'),
           const Token(
-              TokenKind.implementsKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 10, line: 1, column: 11))));
+                  Position(offset: 10, line: 1, column: 11)),
+              value: 'implements'));
 
-      expectToken(
+      expect(
           lexOne('input'),
           const Token(
-              TokenKind.inputKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6))));
+                  Position(offset: 5, line: 1, column: 6)),
+              value: 'input'));
 
-      expectToken(
+      expect(
           lexOne('interface'),
           const Token(
-              TokenKind.interfaceKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 9, line: 1, column: 10))));
+                  Position(offset: 9, line: 1, column: 10)),
+              value: 'interface'));
 
-      expectToken(
+      expect(
           lexOne('mutation'),
           const Token(
-              TokenKind.mutationKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 8, line: 1, column: 9))));
+                  Position(offset: 8, line: 1, column: 9)),
+              value: 'mutation'));
 
-      expectToken(
+      expect(
           lexOne('null'),
           const Token(
-              TokenKind.nullKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5))));
+                  Position(offset: 4, line: 1, column: 5)),
+              value: 'null'));
 
-      expectToken(
+      expect(
           lexOne('on'),
           const Token(
-              TokenKind.onKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 2, line: 1, column: 3))));
+                  Position(offset: 2, line: 1, column: 3)),
+              value: 'on'));
 
-      expectToken(
+      expect(
           lexOne('query'),
           const Token(
-              TokenKind.queryKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6))));
+                  Position(offset: 5, line: 1, column: 6)),
+              value: 'query'));
 
-      expectToken(
+      expect(
           lexOne('scalar'),
           const Token(
-              TokenKind.scalarKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7))));
+                  Position(offset: 6, line: 1, column: 7)),
+              value: 'scalar'));
 
-      expectToken(
+      expect(
           lexOne('schema'),
           const Token(
-              TokenKind.schemaKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7))));
+                  Position(offset: 6, line: 1, column: 7)),
+              value: 'schema'));
 
-      expectToken(
+      expect(
           lexOne('subscription'),
           const Token(
-              TokenKind.subscriptionKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 12, line: 1, column: 13))));
+                  Position(offset: 12, line: 1, column: 13)),
+              value: 'subscription'));
 
-      expectToken(
+      expect(
           lexOne('type'),
           const Token(
-              TokenKind.typeKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5))));
+                  Position(offset: 4, line: 1, column: 5)),
+              value: 'type'));
 
-      expectToken(
+      expect(
           lexOne('union'),
           const Token(
-              TokenKind.unionKeyword,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6))));
+                  Position(offset: 5, line: 1, column: 6)),
+              value: 'union'));
     });
   });
 
   group('Identifiers', () {
     test('lexes correctly', () {
-      expectToken(
+      expect(
           lexOne('\r\n,,identifier,,,\n@f\n'),
           const Token(
-              TokenKind.ident,
+              TokenKind.name,
               Spanning(Position(offset: 4, line: 2, column: 3),
                   Position(offset: 14, line: 2, column: 13)),
               value: 'identifier'));
 
-      expectToken(
+      expect(
           lexOne('long_long_long_identifierNamedUsingDifferentStyles'),
           const Token(
-              TokenKind.ident,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 50, line: 1, column: 51)),
               value: 'long_long_long_identifierNamedUsingDifferentStyles'));
 
-      expectToken(
+      expect(
           lex('"hello world" @foo').elementAt(2),
           const Token(
-              TokenKind.ident,
+              TokenKind.name,
               Spanning(Position(offset: 15, line: 1, column: 16),
                   Position(offset: 18, line: 1, column: 19)),
               value: 'foo'));
 
-      expectToken(
+      expect(
           lexOne('test_123_in_ident567'),
           const Token(
-              TokenKind.ident,
+              TokenKind.name,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 20, line: 1, column: 21)),
               value: 'test_123_in_ident567'));
 
-      expectToken(
+      expect(
           lex('123.123 foo bar').elementAt(2),
           const Token(
-              TokenKind.ident,
+              TokenKind.name,
               Spanning(Position(offset: 12, line: 1, column: 13),
                   Position(offset: 15, line: 1, column: 16)),
               value: 'bar'));
