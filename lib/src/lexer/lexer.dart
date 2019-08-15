@@ -8,7 +8,6 @@
 import 'package:graphite_language/token.dart';
 import 'package:graphite_language/exceptions.dart';
 
-import 'package:graphite_language/src/lexer/lexer.dart';
 import 'package:graphite_language/src/lexer/utils.dart';
 
 const Map<int, TokenKind> _punctuators = {
@@ -458,9 +457,13 @@ class Lexer {
       }
 
       final value = buffer.toString();
+      final kind = TokenKind.maybeKeywordOrIdentifier(value);
 
-      return Token(TokenKind.name, Spanning(start, _position),
-          value: value.toString());
+      return Token(
+        kind,
+        Spanning(start, _position),
+        value: kind == TokenKind.ident ? value : null,
+      );
     }
 
     throw _createSyntaxException(

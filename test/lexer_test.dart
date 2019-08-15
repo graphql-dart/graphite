@@ -493,122 +493,107 @@ void main() {
       expect(
           lexOne('enum'),
           const Token(
-              TokenKind.name,
+              TokenKind.enumKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5)),
-              value: 'enum'));
+                  Position(offset: 4, line: 1, column: 5))));
 
       expect(
           lexOne('extend'),
           const Token(
-              TokenKind.name,
+              TokenKind.extendKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7)),
-              value: 'extend'));
+                  Position(offset: 6, line: 1, column: 7))));
 
       expect(
           lexOne('fragment'),
           const Token(
-              TokenKind.name,
+              TokenKind.fragmentKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 8, line: 1, column: 9)),
-              value: 'fragment'));
+                  Position(offset: 8, line: 1, column: 9))));
 
       expect(
           lexOne('implements'),
           const Token(
-              TokenKind.name,
+              TokenKind.implementsKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 10, line: 1, column: 11)),
-              value: 'implements'));
+                  Position(offset: 10, line: 1, column: 11))));
 
       expect(
           lexOne('input'),
           const Token(
-              TokenKind.name,
+              TokenKind.inputKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6)),
-              value: 'input'));
+                  Position(offset: 5, line: 1, column: 6))));
 
       expect(
           lexOne('interface'),
           const Token(
-              TokenKind.name,
+              TokenKind.interfaceKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 9, line: 1, column: 10)),
-              value: 'interface'));
+                  Position(offset: 9, line: 1, column: 10))));
 
       expect(
           lexOne('mutation'),
           const Token(
-              TokenKind.name,
+              TokenKind.mutationKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 8, line: 1, column: 9)),
-              value: 'mutation'));
+                  Position(offset: 8, line: 1, column: 9))));
 
       expect(
           lexOne('null'),
           const Token(
-              TokenKind.name,
+              TokenKind.nullKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5)),
-              value: 'null'));
+                  Position(offset: 4, line: 1, column: 5))));
 
       expect(
           lexOne('on'),
           const Token(
-              TokenKind.name,
+              TokenKind.onKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 2, line: 1, column: 3)),
-              value: 'on'));
+                  Position(offset: 2, line: 1, column: 3))));
 
       expect(
           lexOne('query'),
           const Token(
-              TokenKind.name,
+              TokenKind.queryKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6)),
-              value: 'query'));
+                  Position(offset: 5, line: 1, column: 6))));
 
       expect(
           lexOne('scalar'),
           const Token(
-              TokenKind.name,
+              TokenKind.scalarKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7)),
-              value: 'scalar'));
+                  Position(offset: 6, line: 1, column: 7))));
 
       expect(
           lexOne('schema'),
           const Token(
-              TokenKind.name,
+              TokenKind.schemaKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 6, line: 1, column: 7)),
-              value: 'schema'));
+                  Position(offset: 6, line: 1, column: 7))));
 
       expect(
           lexOne('subscription'),
           const Token(
-              TokenKind.name,
+              TokenKind.subscriptionKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 12, line: 1, column: 13)),
-              value: 'subscription'));
+                  Position(offset: 12, line: 1, column: 13))));
 
       expect(
           lexOne('type'),
           const Token(
-              TokenKind.name,
+              TokenKind.typeKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 4, line: 1, column: 5)),
-              value: 'type'));
+                  Position(offset: 4, line: 1, column: 5))));
 
       expect(
           lexOne('union'),
           const Token(
-              TokenKind.name,
+              TokenKind.unionKeyword,
               Spanning(Position(offset: 0, line: 1, column: 1),
-                  Position(offset: 5, line: 1, column: 6)),
-              value: 'union'));
+                  Position(offset: 5, line: 1, column: 6))));
     });
   });
 
@@ -617,7 +602,7 @@ void main() {
       expect(
           lexOne('\r\n,,identifier,,,\n@f\n'),
           const Token(
-              TokenKind.name,
+              TokenKind.ident,
               Spanning(Position(offset: 4, line: 2, column: 3),
                   Position(offset: 14, line: 2, column: 13)),
               value: 'identifier'));
@@ -625,7 +610,7 @@ void main() {
       expect(
           lexOne('long_long_long_identifierNamedUsingDifferentStyles'),
           const Token(
-              TokenKind.name,
+              TokenKind.ident,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 50, line: 1, column: 51)),
               value: 'long_long_long_identifierNamedUsingDifferentStyles'));
@@ -633,7 +618,7 @@ void main() {
       expect(
           lex('"hello world" @foo').elementAt(2),
           const Token(
-              TokenKind.name,
+              TokenKind.ident,
               Spanning(Position(offset: 15, line: 1, column: 16),
                   Position(offset: 18, line: 1, column: 19)),
               value: 'foo'));
@@ -641,7 +626,7 @@ void main() {
       expect(
           lexOne('test_123_in_ident567'),
           const Token(
-              TokenKind.name,
+              TokenKind.ident,
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 20, line: 1, column: 21)),
               value: 'test_123_in_ident567'));
@@ -649,7 +634,7 @@ void main() {
       expect(
           lex('123.123 foo bar').elementAt(2),
           const Token(
-              TokenKind.name,
+              TokenKind.ident,
               Spanning(Position(offset: 12, line: 1, column: 13),
                   Position(offset: 15, line: 1, column: 16)),
               value: 'bar'));

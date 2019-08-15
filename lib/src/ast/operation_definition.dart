@@ -13,25 +13,24 @@ part of graphite.language.ast;
 class OperationType extends Node {
   const OperationType._(this.name);
 
-  factory OperationType.fromString(String value) {
-    switch (value) {
-      case Keyword.query:
+  factory OperationType.fromTokenKind(TokenKind kind) {
+    switch (kind) {
+      case TokenKind.queryKeyword:
         return query;
 
-      case Keyword.mutation:
+      case TokenKind.mutationKeyword:
         return mutation;
 
-      case Keyword.subscription:
+      case TokenKind.subscriptionKeyword:
         return subscription;
     }
 
     throw Exception('Unknown operation type!');
   }
 
-  static const OperationType query = OperationType._(Keyword.query);
-  static const OperationType mutation = OperationType._(Keyword.mutation);
-  static const OperationType subscription =
-      OperationType._(Keyword.subscription);
+  static const OperationType query = OperationType._('query');
+  static const OperationType mutation = OperationType._('mutation');
+  static const OperationType subscription = OperationType._('subscription');
 
   final String name;
 

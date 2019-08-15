@@ -40,21 +40,40 @@ class TokenKind {
   static const TokenKind bracketr = TokenKind._('}');
 
   static const TokenKind ident = TokenKind._('<IDENTIFIER>');
-  static const TokenKind enumKeyword = TokenKind._('enum');
-  static const TokenKind extendKeyword = TokenKind._('extend');
-  static const TokenKind fragmentKeyword = TokenKind._('fragment');
-  static const TokenKind implementsKeyword = TokenKind._('implements');
-  static const TokenKind inputKeyword = TokenKind._('input');
-  static const TokenKind interfaceKeyword = TokenKind._('interface');
-  static const TokenKind mutationKeyword = TokenKind._('mutation');
-  static const TokenKind nullKeyword = TokenKind._('null');
-  static const TokenKind onKeyword = TokenKind._('on');
-  static const TokenKind queryKeyword = TokenKind._('query');
-  static const TokenKind scalarKeyword = TokenKind._('scalar');
-  static const TokenKind schemaKeyword = TokenKind._('schema');
-  static const TokenKind subscriptionKeyword = TokenKind._('subscription');
-  static const TokenKind typeKeyword = TokenKind._('type');
-  static const TokenKind unionKeyword = TokenKind._('union');
+  static const TokenKind enumKeyword =
+      TokenKind._('<ENUM_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind extendKeyword =
+      TokenKind._('<EXTEND_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind fragmentKeyword =
+      TokenKind._('<FRAGMENT_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind implementsKeyword =
+      TokenKind._('<IMPLEMENTS_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind inputKeyword =
+      TokenKind._('<INPUT_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind interfaceKeyword =
+      TokenKind._('<INTERFACE_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind mutationKeyword =
+      TokenKind._('<MUTATION_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind nullKeyword =
+      TokenKind._('<NULL_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind onKeyword = TokenKind._('<ON_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind queryKeyword =
+      TokenKind._('<QUERY_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind scalarKeyword =
+      TokenKind._('<SCALAR_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind schemaKeyword =
+      TokenKind._('<SCHEMA_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind subscriptionKeyword =
+      TokenKind._('<SUBSCRIPTION_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind typeKeyword =
+      TokenKind._('<TYPE_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind unionKeyword =
+      TokenKind._('<UNION_KEYWORD_OR_IDENTIFIER>');
+
+  static const TokenKind trueKeyword =
+      TokenKind._('<TRUE_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind falseKeyword =
+      TokenKind._('<FALSE_KEYWORD_OR_IDENTIFIER>');
 
   /// Tests whether [kind] is a keyword kind.
   static bool isKeyword(TokenKind kind) {
@@ -79,7 +98,38 @@ class TokenKind {
 
     return false;
   }
+
+  static bool isIdentOrKeyword(TokenKind kind) =>
+      kind == TokenKind.ident || isKeyword(kind);
+
+  static TokenKind maybeKeywordOrIdentifier(String value) {
+    if (_keywords.containsKey(value)) {
+      return _keywords[value];
+    }
+
+    return TokenKind.ident;
+  }
 }
+
+const Map<String, TokenKind> _keywords = {
+  'enum': TokenKind.enumKeyword,
+  'extend': TokenKind.extendKeyword,
+  'fragment': TokenKind.fragmentKeyword,
+  'implements': TokenKind.implementsKeyword,
+  'input': TokenKind.inputKeyword,
+  'interface': TokenKind.interfaceKeyword,
+  'mutation': TokenKind.mutationKeyword,
+  'null': TokenKind.nullKeyword,
+  'on': TokenKind.onKeyword,
+  'query': TokenKind.queryKeyword,
+  'scalar': TokenKind.scalarKeyword,
+  'schema': TokenKind.schemaKeyword,
+  'subscription': TokenKind.subscriptionKeyword,
+  'type': TokenKind.typeKeyword,
+  'union': TokenKind.unionKeyword,
+  'true': TokenKind.trueKeyword,
+  'false': TokenKind.falseKeyword,
+};
 
 class Token {
   const Token(this.kind, this.spanning, {this.value});
@@ -89,12 +139,15 @@ class Token {
   final String value;
 
   @override
+  bool operator ==(Object other) =>
+      other is Token &&
+      other.kind == kind &&
+      other.spanning == spanning &&
+      other.value == value;
+
+  @override
+  int get hashCode => kind.hashCode ^ spanning.hashCode ^ value.hashCode;
+
+  @override
   String toString() => 'Token(kind=$kind, value=$value, spanning=$spanning)';
-
-  /// Tests whether [token] is identifier.
-  static bool isIdent(Token token) =>
-      token.kind == TokenKind.ident || isKeyword(token);
-
-  /// Tests whether [token] is a keyword.
-  static bool isKeyword(Token token) => TokenKind.isKeyword(token.kind);
 }
