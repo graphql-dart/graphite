@@ -134,7 +134,7 @@ class Parser {
 
         case TokenKind.extendKeyword:
           final nextToken = _peek().kind;
-          return kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
+          return nextToken.kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
       }
     } else if (tok.kind == TokenKind.bracketl) {
       return _parseSelectionSet();
@@ -648,7 +648,7 @@ class Parser {
 
   ast.SchemaExtension _parseSchemaExtension() {
     final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
-    final definitions = _isKindOf(TokenKind.bracketl) ? _parseRootOperationTypeDefinition() : null;
+    final definitions = _isKindOf(TokenKind.bracketl) ? _parseRootOperationTypeDefinitions() : null;
 
     if (directives.isEmpty && definitions.isEmpty) {
       throw Exception('Expected either directives or definitions, found nothing!');
