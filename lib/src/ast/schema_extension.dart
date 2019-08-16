@@ -12,7 +12,7 @@ part of graphite.language.ast;
 ///
 /// https://graphql.github.io/graphql-spec/draft/#SchemaExtension
 class SchemaExtension extends Definition {
-  const SchemaDefinition({
+  const SchemaExtension({
     this.definitions,
     this.directives,
   });

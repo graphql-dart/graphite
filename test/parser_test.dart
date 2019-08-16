@@ -30,7 +30,7 @@ void main() {
     });
 
     group('SchemaDefinition', () {
-      test('parses schema definition', () {
+      test('parses simple definition', () {
         expect(() => convertSourceToMap('schema { name: HelloWorld }'), throws);
         expect(() => convertSourceToMap('schema { name HelloWorld }'), throws);
         expect(() => convertSourceToMap('schema { name }'), throws);
@@ -551,6 +551,56 @@ void main() {
 
     // Extensions
     // ------------------------------------------------------------------------
+
+    group('SchemaExtension', () {
+      test('parses simple extension', () {
+        expect(() => convertSourceToMap('extend schema { name: HelloWorld }'), throws);
+        expect(() => convertSourceToMap('extend schema { name HelloWorld }'), throws);
+        expect(() => convertSourceToMap('extend schema { name }'), throws);
+
+        expect(
+            convertSourceToMap('extend schema { query: Query }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.SchemaExtension(definitions: [
+                ast.RootOperationTypeDefinition(
+                  operation: ast.OperationType.query,
+                  value: ast.NamedType(name: 'Query'),
+                )
+              ])
+            ])));
+      });
+
+      test('parse extension with directives', () {
+        expect(
+          convertSourceToMap('extend scheam @foo @bar'),
+          convertAstToMap(const ast.Document(definitions: [
+            ast.SchemaExtension(directives: [
+              ast.Directive(name: 'foo'),
+              ast.Directive(name: 'bar')
+            ])
+        ])));
+
+        expect(
+            convertSourceToMap('extend schema @one @two @three {'
+                'mutation: Mutation,'
+                'query: Query'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.SchemaExtension(definitions: [
+                ast.RootOperationTypeDefinition(
+                    operation: ast.OperationType.mutation,
+                    value: ast.NamedType(name: 'Mutation')),
+                ast.RootOperationTypeDefinition(
+                    operation: ast.OperationType.query,
+                    value: ast.NamedType(name: 'Query')),
+              ], directives: [
+                ast.Directive(name: 'one'),
+                ast.Directive(name: 'two'),
+                ast.Directive(name: 'three')
+              ])
+            ])));
+      });
+    });
 
     group('ScalarTypeExtension', () {
       test('parses extension', () {
