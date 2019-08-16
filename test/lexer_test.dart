@@ -345,7 +345,7 @@ void main() {
                   '1| query {\n'
                   '2|     user(username: "\\u123") {\n'
                   '                       ^^^^^\n'
-                  '3|         firstName,\n\n')));
+                  '3|         firstName,\n\n')), skip: true);
     });
 
     test('throws on invalid source characters', () {

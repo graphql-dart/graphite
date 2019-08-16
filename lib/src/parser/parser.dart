@@ -627,8 +627,6 @@ class Parser {
   }
 
   ast.Node _parseTypeExtension() {
-    _expectToken(TokenKind.extendKeyword);
-
     switch (_peek().kind) {
       case TokenKind.scalarKeyword:
         return _parseScalarTypeExtension();
@@ -647,6 +645,9 @@ class Parser {
   }
 
   ast.SchemaExtension _parseSchemaExtension() {
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.schemaKeyword);
+
     final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
     final definitions = _isKindOf(TokenKind.bracketl) ? _parseRootOperationTypeDefinitions() : null;
 
