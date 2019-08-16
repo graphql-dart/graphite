@@ -133,8 +133,8 @@ class Parser {
           return _parseTypeDefinition();
 
         case TokenKind.extendKeyword:
-          final nextToken = _peek().kind;
-          return nextToken.kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
+          final kind = _peek().kind;
+          return kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
       }
     } else if (tok.kind == TokenKind.bracketl) {
       return _parseSelectionSet();
@@ -154,7 +154,7 @@ class Parser {
         definitions: _parseRootOperationTypeDefinitions());
   }
 
-  ast.RootOperationTypeDefinition _parseRootOperationTypeDefinitions() =>
+  Iterable<ast.RootOperationTypeDefinition> _parseRootOperationTypeDefinitions() =>
     _many(TokenKind.bracketl,
             _parseRootOperationTypeDefinition, TokenKind.bracketr);
 
