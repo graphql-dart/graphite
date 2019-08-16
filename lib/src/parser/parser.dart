@@ -133,7 +133,8 @@ class Parser {
           return _parseTypeDefinition();
 
         case TokenKind.extendKeyword:
-          return _parseTypeExtension();
+          final nextToken = _peek().kind;
+          return kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
       }
     } else if (tok.kind == TokenKind.bracketl) {
       return _parseSelectionSet();
@@ -150,9 +151,12 @@ class Parser {
 
     return ast.SchemaDefinition(
         directives: _isKindOf(TokenKind.at) ? _parseDirectives() : null,
-        definitions: _many(TokenKind.bracketl,
-            _parseRootOperationTypeDefinition, TokenKind.bracketr));
+        definitions: _parseRootOperationTypeDefinitions());
   }
+
+  ast.RootOperationTypeDefinition _parseRootOperationTypeDefinitions() =>
+    _many(TokenKind.bracketl,
+            _parseRootOperationTypeDefinition, TokenKind.bracketr);
 
   ast.RootOperationTypeDefinition _parseRootOperationTypeDefinition() {
     final operation = _parseOperationType();
@@ -623,7 +627,9 @@ class Parser {
   }
 
   ast.Node _parseTypeExtension() {
-    switch (_lookahead(1).kind) {
+    _expectToken(TokenKind.extendKeyword);
+
+    switch (_peek().kind) {
       case TokenKind.scalarKeyword:
         return _parseScalarTypeExtension();
 
@@ -638,6 +644,20 @@ class Parser {
       case TokenKind.inputKeyword:
         break;
     }
+  }
+
+  ast.SchemaExtension _parseSchemaExtension() {
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    final definitions = _isKindOf(TokenKind.bracketl) ? _parseRootOperationTypeDefinition() : null;
+
+    if (directives.isEmpty && definitions.isEmpty) {
+      throw Exception('Expected either directives or definitions, found nothing!');
+    }
+
+    return ast.SchemaExtension(
+      directives: directives,
+      definitions: definitions,
+    );
   }
 
   ast.ScalarTypeExtension _parseScalarTypeExtension() {

@@ -55,6 +55,7 @@ enum NodeKind {
   inputValueDefinition,
 
   // Extensions
+  schemaExtension,
   scalarTypeExtension,
   interfaceTypeExtension,
   enumTypeExtension,
