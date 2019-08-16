@@ -133,7 +133,7 @@ class Parser {
           return _parseTypeDefinition();
 
         case TokenKind.extendKeyword:
-          final kind = _peek().kind;
+          final kind = _lookahead(1).kind;
           return kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
       }
     } else if (tok.kind == TokenKind.bracketl) {
@@ -642,6 +642,8 @@ class Parser {
       case TokenKind.inputKeyword:
         break;
     }
+    
+    throw Exception('Unexpected token!');
   }
 
   ast.SchemaExtension _parseSchemaExtension() {
