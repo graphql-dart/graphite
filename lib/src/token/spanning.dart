@@ -51,7 +51,10 @@ class Spanning {
   final Position end;
 
   @override
-  bool operator ==(dynamic other) =>
+  int get hashCode => start.hashCode ^ end.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
       other is Spanning && other.start == start && other.end == end;
 
   @override
