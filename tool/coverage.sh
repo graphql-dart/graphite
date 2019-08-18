@@ -3,6 +3,8 @@
 
 OBSERVATORY_PORT=9999
 
+cd $PACKAGE
+
 echo "Installing coverage package..."
 
 pub global activate coverage &>/dev/null
@@ -31,4 +33,4 @@ pub global run coverage:format_coverage \
 
 echo "Send coverage data to codecov..."
 
-bash <(curl -s https://codecov.io/bash) -f tmp/lcov.info
+bash <(curl -s https://codecov.io/bash) -f tmp/lcov.info -F $PACKAGE

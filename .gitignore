@@ -16,7 +16,7 @@
 
 
 # Dart
-.packages
-pubspec.lock
+graphite_language/.packages
+graphite_language/pubspec.lock
 .dart_tool/
 doc/api
