@@ -68,10 +68,10 @@ class TokenKind {
   static const TokenKind unionKeyword =
       TokenKind._('<UNION_KEYWORD_OR_IDENTIFIER>');
   static const TokenKind directiveKeyword =
-    TokenKind._('<DIRECTIVE_KEYWORD_OR_IDENTIFIER>');
+      TokenKind._('<DIRECTIVE_KEYWORD_OR_IDENTIFIER>');
 
   static const TokenKind nullKeyword =
-  TokenKind._('<NULL_KEYWORD_OR_IDENTIFIER>');
+      TokenKind._('<NULL_KEYWORD_OR_IDENTIFIER>');
 
   static const TokenKind trueKeyword =
       TokenKind._('<TRUE_KEYWORD_OR_IDENTIFIER>');
@@ -97,6 +97,8 @@ class TokenKind {
       case typeKeyword:
       case unionKeyword:
       case directiveKeyword:
+      case trueKeyword:
+      case falseKeyword:
         return true;
     }
 

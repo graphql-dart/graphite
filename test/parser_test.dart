@@ -3,6 +3,7 @@ import 'dart:convert' show json;
 import 'package:graphite_language/ast.dart' as ast;
 import 'package:graphite_language/parser.dart';
 import 'package:graphite_language/token.dart';
+
 import 'package:test/test.dart';
 
 dynamic convertSourceToMap(String code) =>
@@ -1224,6 +1225,15 @@ void main() {
               ])
             ])));
       });
+    });
+  });
+
+  group('Real world schema parsing', () {
+    test('GitHub schema parsing', () async {
+      await expectLater(
+          // CWD is root directory
+          () => parseFile(Uri.file('./test/fixtures/github.graphql')),
+          returnsNormally);
     });
   });
 }

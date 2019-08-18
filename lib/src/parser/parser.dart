@@ -383,33 +383,22 @@ class Parser {
         return ast.StringValue(_advanceToken().value);
 
       case TokenKind.nullKeyword:
+        _eatToken();
         return const ast.NullValue(null);
 
       case TokenKind.trueKeyword:
+        _eatToken();
         return const ast.BooleanValue(true);
 
       case TokenKind.falseKeyword:
+        _eatToken();
         return const ast.BooleanValue(false);
 
       case TokenKind.bracel:
-        final values = <ast.Node>[];
-
-        do {
-          values.add(_parseValue(isConst: isConst));
-        } while (_isKindOf(TokenKind.bracer));
-
-        return ast.ListValue(values);
+        return _parseListValue(isConst: isConst);
 
       case TokenKind.bracketl:
-        final fields = _many(
-            TokenKind.bracketl,
-            () => ast.ObjectField(
-                  name: _parseName(),
-                  value: _parseValue(isConst: isConst),
-                ),
-            TokenKind.bracketr);
-
-        return ast.ObjectValue(fields);
+        return _parseObjectValue(isConst: isConst);
     }
 
     if (TokenKind.isIdentOrKeyword(token.kind)) {
@@ -417,6 +406,27 @@ class Parser {
     }
 
     throw Exception('Unexpected token ${token}!');
+  }
+
+  ast.ListValue _parseListValue({bool isConst}) => ast.ListValue(_many(
+          TokenKind.bracel,
+          () => _parseValue(isConst: isConst),
+          TokenKind.bracer)
+      .toList(growable: false));
+
+  ast.ObjectValue _parseObjectValue({bool isConst}) => ast.ObjectValue(_many(
+      TokenKind.bracketl,
+      () => _parseObjectField(isConst: isConst),
+      TokenKind.bracketr));
+
+  ast.ObjectField _parseObjectField({bool isConst}) {
+    final name = _parseName();
+    _expectToken(TokenKind.colon);
+
+    return ast.ObjectField(
+      name: name,
+      value: _parseValue(isConst: isConst),
+    );
   }
 
   ast.EnumValue _parseEnumValue() {
