@@ -18,6 +18,16 @@ class Position {
   final int column;
 
   @override
+  bool operator ==(Object other) =>
+      other is Position &&
+      other.offset == offset &&
+      other.line == line &&
+      other.column == column;
+
+  @override
+  int get hashCode => offset ^ line ^ column;
+
+  @override
   String toString() => 'Position(offset=$offset, line=$line, column=$column)';
 
   Map<String, Object> toJson() => {
@@ -32,11 +42,20 @@ class Position {
 class Spanning {
   const Spanning(this.start, this.end);
 
+  factory Spanning.zeroWidth(Position position) => Spanning(position, position);
+
   /// Start position of the token.
   final Position start;
 
   /// End position of the token.
   final Position end;
+
+  @override
+  int get hashCode => start.hashCode ^ end.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Spanning && other.start == start && other.end == end;
 
   @override
   String toString() => 'Spanning(start=$start, end=$end)';
