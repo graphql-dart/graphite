@@ -480,7 +480,7 @@ class Parser {
         return _parseEnumTypeDefinition();
 
       case TokenKind.inputKeyword:
-        return _parseInputTypeDefinition();
+        return _parseInputObjectTypeDefinition();
     }
 
     throw Exception('Unexpected keyword!');
@@ -657,7 +657,7 @@ class Parser {
     );
   }
 
-  ast.Node _parseInputTypeDefinition() {
+  ast.Node _parseInputObjectTypeDefinition() {
     final description = _isKindOf(TokenKind.stringValue) ||
             _isKindOf(TokenKind.blockStringValue)
         ? _parseDescription()
@@ -675,8 +675,9 @@ class Parser {
     );
   }
 
-  Iterable<ast.InputValueDefinition> _parseInputFieldsDefinition() => _many(TokenKind.bracketl, _parseInputValueDefinition, TokenKind.bracketr);
-  
+  Iterable<ast.InputValueDefinition> _parseInputFieldsDefinition() =>
+      _many(TokenKind.bracketl, _parseInputValueDefinition, TokenKind.bracketr);
+
   String _parseDescription() {
     if (!_isKindOf(TokenKind.stringValue) &&
         !_isKindOf(TokenKind.blockStringValue)) {
@@ -733,7 +734,10 @@ class Parser {
         return _parseUnionTypeExtension();
 
       case TokenKind.typeKeyword:
+        break;
+
       case TokenKind.inputKeyword:
+        return _parseInputObjectTypeExtension();
         break;
     }
 
@@ -807,7 +811,7 @@ class Parser {
         name: name, values: values, directives: directives);
   }
 
-  ast.Node _parseUnionTypeExtension() {
+  ast.UnionTypeExtension _parseUnionTypeExtension() {
     _expectToken(TokenKind.extendKeyword);
     _expectToken(TokenKind.unionKeyword);
 
@@ -832,6 +836,27 @@ class Parser {
       name: name,
       directives: directives,
       members: members,
+    );
+  }
+
+  ast.InputObjectTypeExtension _parseInputObjectTypeExtension() {
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.inputKeyword);
+
+    final name = _parseName();
+    final directives =
+        _isKindOf(TokenKind.at) ? _parseDirectives(isConst: true) : null;
+    final fields =
+        _isKindOf(TokenKind.bracketl) ? _parseInputFieldsDefinition() : null;
+
+    if (directives == null && fields == null) {
+      throw Exception('Expected either directives or members, found nothing!');
+    }
+
+    return ast.InputObjectTypeExtension(
+      name: name,
+      directives: directives,
+      fields: fields,
     );
   }
 }

@@ -1050,5 +1050,50 @@ void main() {
                 const ast.Document(definitions: [ast.ObjectTypeExtension()])));
       }, skip: true);
     });
+
+    group('InputObjectTypeExtension', () {
+      test('parses extension with fields', () {
+        expect(() => convertSourceToMap('extend input Foo'), throws);
+        expect(() => convertSourceToMap('extend input Foo {}'), throws);
+        expect(
+            () => convertSourceToMap(
+                '"""Hello world""" extend input Foo { HelloWorld: HelloWorld }'),
+            throws);
+
+        expect(
+            convertSourceToMap(
+                'extend input Foo { bar: String, baz: HelloWorld }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeExtension(name: 'Foo', fields: [
+                ast.InputValueDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'String')),
+                ast.InputValueDefinition(
+                    name: 'baz', type: ast.NamedType(name: 'HelloWorld')),
+              ])
+            ])));
+      });
+
+      test('parses extension with directives', () {
+        expect(
+            convertSourceToMap('extend input Foo @foo @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('extend input Foo @foo { bar: String }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo')
+              ], fields: [
+                ast.InputValueDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'String'))
+              ])
+            ])));
+      });
+    });
   });
 }
