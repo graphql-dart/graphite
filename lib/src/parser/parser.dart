@@ -515,7 +515,6 @@ class Parser {
     if (_isOptionalKindOf(TokenKind.implementsKeyword)) {
       interfaces = [];
 
-      // Optional leading ampersand. WTF spec?
       if (_peek().kind == TokenKind.amp) {
         _eatToken();
       }
@@ -734,7 +733,7 @@ class Parser {
         return _parseUnionTypeExtension();
 
       case TokenKind.typeKeyword:
-        break;
+        return _parseObjectTypeExtension();
 
       case TokenKind.inputKeyword:
         return _parseInputObjectTypeExtension();
@@ -771,6 +770,42 @@ class Parser {
     return ast.ScalarTypeExtension(
       name: _parseName(),
       directives: _parseDirectives(),
+    );
+  }
+
+  ast.ObjectTypeExtension _parseObjectTypeExtension() {
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.typeKeyword);
+
+    final name = _parseName();
+    List<ast.NamedType> interfaces;
+
+    if (_isOptionalKindOf(TokenKind.implementsKeyword)) {
+      interfaces = [];
+
+      if (_peek().kind == TokenKind.amp) {
+        _eatToken();
+      }
+
+      do {
+        interfaces.add(_parseNamedType());
+      } while (_isOptionalKindOf(TokenKind.amp));
+    }
+
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    final fields =
+        _isKindOf(TokenKind.bracketl) ? _parseFieldsDefinition() : null;
+
+    if (interfaces == null && directives == null && fields == null) {
+      throw Exception(
+          'Expected implements or directives, or fields, found nothing!');
+    }
+
+    return ast.ObjectTypeExtension(
+      name: name,
+      interfaces: interfaces,
+      directives: directives,
+      fields: fields,
     );
   }
 

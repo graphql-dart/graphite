@@ -28,6 +28,6 @@ class ObjectTypeDefinition extends Definition {
     'description': description,
     'interfaces': interfaces,
     'directives': directives,
-    'fieldDefinitions': fields,
+    'fields': fields,
   };
 }

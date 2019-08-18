@@ -1041,14 +1041,144 @@ void main() {
     });
 
     group('ObjectTypeExtension', () {
-      test('parses simple extension', () {
-        expect(() => convertSourceToMap('extend type Foo'), throws);
+      test('parses definition with directives', () {
+        expect(() => convertSourceToMap('extend type @foo @bar Foo'), throws);
+        expect(
+            () => convertSourceToMap('extend type Foo @foo @bar {}'), throws);
 
         expect(
-            convertSourceToMap('extend type Foo implements Bar & Baz'),
-            convertAstToMap(
-                const ast.Document(definitions: [ast.ObjectTypeExtension()])));
-      }, skip: true);
+            convertSourceToMap('extend type Foo @foo @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('extend type Foo @baz { bar: Bar }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'baz'),
+              ], fields: [
+                ast.FieldDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'Bar'))
+              ])
+            ])));
+      });
+
+      test('parses definition with fields', () {
+        expect(() => convertSourceToMap('extend type'), throws);
+        expect(() => convertSourceToMap('extend type """Foo"""'), throws);
+        expect(() => convertSourceToMap('extend type Name {}'), throws);
+        expect(() => convertSourceToMap('extend type Foo'), throws);
+        expect(() => convertSourceToMap('"""Foo""" extend type Foo'), throws);
+        expect(
+            () => convertSourceToMap('extend type Foo { foo: Foo """Foo""" }'),
+            throws);
+        expect(
+            () => convertSourceToMap('extend type Foo { foo: @foo }'), throws);
+
+        expect(
+            convertSourceToMap('extend type Foo {'
+                '  foo: Foo @foo\n'
+                '  bar: Bar\n'
+                '  baz: Baz @baz @xyz\n'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', fields: [
+                ast.FieldDefinition(
+                    name: 'foo',
+                    type: ast.NamedType(name: 'Foo'),
+                    directives: [ast.Directive(name: 'foo')]),
+                ast.FieldDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'Bar')),
+                ast.FieldDefinition(
+                    name: 'baz',
+                    type: ast.NamedType(name: 'Baz'),
+                    directives: [
+                      ast.Directive(name: 'baz'),
+                      ast.Directive(name: 'xyz')
+                    ])
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('extend type Foo @foo {'
+                '  """Bar""" bar: Bar\n'
+                '  xyz: XYZ'
+                '  "Baz" baz: Baz\n'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo')
+              ], fields: [
+                ast.FieldDefinition(
+                    name: 'bar',
+                    description: 'Bar',
+                    type: ast.NamedType(name: 'Bar')),
+                ast.FieldDefinition(
+                    name: 'xyz', type: ast.NamedType(name: 'XYZ')),
+                ast.FieldDefinition(
+                    name: 'baz',
+                    description: 'Baz',
+                    type: ast.NamedType(name: 'Baz'))
+              ])
+            ])));
+      });
+
+      test('parses definition with `implements`', () {
+        expect(() => convertSourceToMap('extend type Foo & Bar'), throws);
+        expect(() => convertSourceToMap('extend type Foo implements & & Bar'),
+            throws);
+        expect(() => convertSourceToMap('extend type Foo implements & Bar &'),
+            throws);
+        expect(
+            () => convertSourceToMap(
+                'extend type Foo implements Baz implements Bar'),
+            throws);
+        expect(() => convertSourceToMap('extend type Foo implements Baz {}'),
+            throws);
+
+        expect(
+            convertSourceToMap('extend type Foo implements Bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(
+                  name: 'Foo', interfaces: [ast.NamedType(name: 'Bar')])
+            ])));
+
+        expect(
+            convertSourceToMap('extend type Foo implements & Baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(
+                  name: 'Foo', interfaces: [ast.NamedType(name: 'Baz')])
+            ])));
+
+        expect(
+            convertSourceToMap('extend type Foo implements Bar & Baz @foo'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', interfaces: [
+                ast.NamedType(name: 'Bar'),
+                ast.NamedType(name: 'Baz')
+              ], directives: [
+                ast.Directive(name: 'foo')
+              ])
+            ])));
+        expect(
+            convertSourceToMap('extend type Foo implements Bar & Baz & Xyz {\n'
+                'foo: Foo\n'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.ObjectTypeExtension(name: 'Foo', interfaces: [
+                ast.NamedType(name: 'Bar'),
+                ast.NamedType(name: 'Baz'),
+                ast.NamedType(name: 'Xyz')
+              ], fields: [
+                ast.FieldDefinition(
+                    name: 'foo', type: ast.NamedType(name: 'Foo'))
+              ])
+            ])));
+      });
     });
 
     group('InputObjectTypeExtension', () {
