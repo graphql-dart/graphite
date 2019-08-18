@@ -478,6 +478,110 @@ void main() {
       });
     });
 
+    group('InputObjectTypeDefinition', () {
+      test('parses definition', () {
+        expect(() => convertSourceToMap('input'), throws);
+        expect(() => convertSourceToMap('input """Foo"""'), throws);
+        expect(() => convertSourceToMap('input Name {}'), throws);
+
+        expect(
+            convertSourceToMap('input Foo'),
+            convertAstToMap(const ast.Document(
+                definitions: [ast.InputObjectTypeDefinition(name: 'Foo')])));
+
+        expect(
+            convertSourceToMap('"""Foo""" input Foo'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeDefinition(name: 'Foo', description: 'Foo')
+            ])));
+      });
+
+      test('parses definition with directives', () {
+        expect(() => convertSourceToMap('input @foo @bar Foo'), throws);
+        expect(() => convertSourceToMap('input Foo @foo @bar {}'), throws);
+
+        expect(
+            convertSourceToMap('"""Foo""" input Foo @foo @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeDefinition(
+                  name: 'Foo',
+                  description: 'Foo',
+                  directives: [
+                    ast.Directive(name: 'foo'),
+                    ast.Directive(name: 'bar')
+                  ])
+            ])));
+
+        expect(
+            convertSourceToMap('"""Foo""" input Foo @baz { bar: Bar }'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeDefinition(
+                  name: 'Foo',
+                  description: 'Foo',
+                  directives: [
+                    ast.Directive(name: 'baz'),
+                  ],
+                  fields: [
+                    ast.InputValueDefinition(
+                        name: 'bar', type: ast.NamedType(name: 'Bar'))
+                  ])
+            ])));
+      });
+
+      test('parses definition with fields', () {
+        expect(() => convertSourceToMap('input Foo { foo: Foo """Foo""" }'),
+            throws);
+        expect(() => convertSourceToMap('input Foo { foo: @foo }'), throws);
+
+        expect(
+            convertSourceToMap('input Foo {'
+                '  foo: Foo @foo\n'
+                '  bar: Bar\n'
+                '  baz: Baz @baz @xyz\n'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeDefinition(name: 'Foo', fields: [
+                ast.InputValueDefinition(
+                    name: 'foo',
+                    type: ast.NamedType(name: 'Foo'),
+                    directives: [ast.Directive(name: 'foo')]),
+                ast.InputValueDefinition(
+                    name: 'bar', type: ast.NamedType(name: 'Bar')),
+                ast.InputValueDefinition(
+                    name: 'baz',
+                    type: ast.NamedType(name: 'Baz'),
+                    directives: [
+                      ast.Directive(name: 'baz'),
+                      ast.Directive(name: 'xyz')
+                    ])
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('input Foo @foo {'
+                '  """Bar""" bar: Bar\n'
+                '  xyz: XYZ'
+                '  "Baz" baz: Baz\n'
+                '}'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.InputObjectTypeDefinition(name: 'Foo', directives: [
+                ast.Directive(name: 'foo')
+              ], fields: [
+                ast.InputValueDefinition(
+                    name: 'bar',
+                    description: 'Bar',
+                    type: ast.NamedType(name: 'Bar')),
+                ast.InputValueDefinition(
+                    name: 'xyz', type: ast.NamedType(name: 'XYZ')),
+                ast.InputValueDefinition(
+                    name: 'baz',
+                    description: 'Baz',
+                    type: ast.NamedType(name: 'Baz'))
+              ])
+            ])));
+      });
+    });
+
     group('UnionTypeDefinition', () {
       test('parses simple definition', () {
         expect(() => convertSourceToMap('union Foo FOO'), throws);
@@ -861,18 +965,15 @@ void main() {
             convertSourceToMap(
                 'extend union Foo @foo @bar @baz @xyz = Bar | Baz'),
             convertAstToMap(const ast.Document(definitions: [
-              ast.UnionTypeExtension(
-                  name: 'Foo',
-                  directives: [
-                    ast.Directive(name: 'foo'),
-                    ast.Directive(name: 'bar'),
-                    ast.Directive(name: 'baz'),
-                    ast.Directive(name: 'xyz')
-                  ],
-                  members: [
-                    ast.NamedType(name: 'Bar'),
-                    ast.NamedType(name: 'Baz')
-                  ])
+              ast.UnionTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar'),
+                ast.Directive(name: 'baz'),
+                ast.Directive(name: 'xyz')
+              ], members: [
+                ast.NamedType(name: 'Bar'),
+                ast.NamedType(name: 'Baz')
+              ])
             ])));
       });
     });

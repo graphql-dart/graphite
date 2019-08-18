@@ -558,9 +558,9 @@ class Parser {
   }
 
   Iterable<ast.InputValueDefinition> _parseArgumentsDefinition() =>
-      _many(TokenKind.parenl, _parseArgumentDefinition, TokenKind.parenr);
+      _many(TokenKind.parenl, _parseInputValueDefinition, TokenKind.parenr);
 
-  ast.InputValueDefinition _parseArgumentDefinition() {
+  ast.InputValueDefinition _parseInputValueDefinition() {
     final description = _isKindOf(TokenKind.stringValue) ||
             _isKindOf(TokenKind.blockStringValue)
         ? _parseDescription()
@@ -665,9 +665,18 @@ class Parser {
 
     _expectToken(TokenKind.inputKeyword);
 
-    return ast.InputObjectTypeDefinition();
+    return ast.InputObjectTypeDefinition(
+      name: _parseName(),
+      description: description,
+      directives:
+          _isKindOf(TokenKind.at) ? _parseDirectives(isConst: true) : null,
+      fields:
+          _isKindOf(TokenKind.bracketl) ? _parseInputFieldsDefinition() : null,
+    );
   }
 
+  Iterable<ast.InputValueDefinition> _parseInputFieldsDefinition() => _many(TokenKind.bracketl, _parseInputValueDefinition, TokenKind.bracketr);
+  
   String _parseDescription() {
     if (!_isKindOf(TokenKind.stringValue) &&
         !_isKindOf(TokenKind.blockStringValue)) {
