@@ -1,0 +1,3 @@
+ignore:
+  - "lib/src/ast.dart"
+  - "lib/src/ast/*.dart"
