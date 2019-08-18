@@ -53,6 +53,7 @@ enum NodeKind {
   inputObjectTypeDefinition,
   fieldDefinition,
   inputValueDefinition,
+  directiveDefinition,
 
   // Extensions
   schemaExtension,

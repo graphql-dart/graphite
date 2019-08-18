@@ -93,3 +93,5 @@ part 'src/ast/enum_type_extension.dart';
 part 'src/ast/input_object_type_extension.dart';
 
 part 'src/ast/object_type_extension.dart';
+
+part 'src/ast/directive_definition.dart';

@@ -549,13 +549,89 @@ void main() {
       });
     });
 
+    group('DirectiveDefinition', () {
+      test('parses simple definition', () {
+        expect(() => convertSourceToMap('directive @Bar'), throws);
+        expect(() => convertSourceToMap('directive Bar on QUERY'), throws);
+        expect(
+            () => convertSourceToMap('directive @Foo on QUERY | BAR'), throws);
+        expect(() => convertSourceToMap('directive @Foo on FOO'), throws);
+
+        expect(
+            convertSourceToMap(
+                '"""Directive description""" directive @Foo on QUERY'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.DirectiveDefinition(
+                  name: 'Foo',
+                  description: 'Directive description',
+                  locations: [ast.DirectiveLocation.query])
+            ])));
+
+        expect(
+            convertSourceToMap(
+                'directive @QUERY on MUTATION | SUBSCRIPTION | FIELD | SCHEMA'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.DirectiveDefinition(name: 'QUERY', locations: [
+                ast.DirectiveLocation.mutation,
+                ast.DirectiveLocation.subscription,
+                ast.DirectiveLocation.field,
+                ast.DirectiveLocation.schema
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap(
+                '"""Directive description""" directive @FooBar on | QUERY | MUTATION'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.DirectiveDefinition(
+                  name: 'FooBar',
+                  description: 'Directive description',
+                  locations: [
+                    ast.DirectiveLocation.query,
+                    ast.DirectiveLocation.mutation
+                  ])
+            ])));
+      });
+
+      test('parses with arguments', () {
+        expect(
+            () => convertSourceToMap('directive @FooBar ( on QUERY'), throws);
+        expect(
+            () => convertSourceToMap('directive @FooBar () on QUERY'), throws);
+        expect(
+            () => convertSourceToMap(
+                'directive @FooBar (foo: Int! = 123) on BAR'),
+            throws);
+
+        expect(
+            convertSourceToMap(
+                'directive @Foo (foo: ID = 123, bar: String @bar) on QUERY'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.DirectiveDefinition(name: 'Foo', arguments: [
+                ast.InputValueDefinition(
+                    name: 'foo',
+                    type: ast.NamedType(name: 'ID'),
+                    defaultValue: ast.IntValue(123)),
+                ast.InputValueDefinition(
+                    name: 'bar',
+                    type: ast.NamedType(name: 'String'),
+                    directives: [ast.Directive(name: 'bar')])
+              ], locations: [
+                ast.DirectiveLocation.query,
+              ])
+            ])));
+      });
+    });
+
     // Extensions
     // ------------------------------------------------------------------------
 
     group('SchemaExtension', () {
       test('parses simple extension', () {
-        expect(() => convertSourceToMap('extend schema { name: HelloWorld }'), throws);
-        expect(() => convertSourceToMap('extend schema { name HelloWorld }'), throws);
+        expect(() => convertSourceToMap('extend schema { name: HelloWorld }'),
+            throws);
+        expect(() => convertSourceToMap('extend schema { name HelloWorld }'),
+            throws);
         expect(() => convertSourceToMap('extend schema { name }'), throws);
 
         expect(
@@ -572,13 +648,13 @@ void main() {
 
       test('parse extension with directives', () {
         expect(
-          convertSourceToMap('extend scheam @foo @bar'),
-          convertAstToMap(const ast.Document(definitions: [
-            ast.SchemaExtension(directives: [
-              ast.Directive(name: 'foo'),
-              ast.Directive(name: 'bar')
-            ])
-        ])));
+            convertSourceToMap('extend schema @foo @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.SchemaExtension(directives: [
+                ast.Directive(name: 'foo'),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
 
         expect(
             convertSourceToMap('extend schema @one @two @three {'

@@ -7,8 +7,7 @@
 
 import 'package:graphite_language/ast.dart' as ast;
 import 'package:graphite_language/lexer.dart' show Lexer;
-import 'package:graphite_language/token.dart'
-    show Source, Token, TokenKind;
+import 'package:graphite_language/token.dart' show Source, Token, TokenKind;
 
 class Parser {
   Parser(this.source);
@@ -132,15 +131,43 @@ class Parser {
         case TokenKind.inputKeyword:
           return _parseTypeDefinition();
 
+        case TokenKind.directiveKeyword:
+          return _parseDirectiveDefinition();
+
         case TokenKind.extendKeyword:
-          final kind = _lookahead(1).kind;
-          return kind == TokenKind.schemaKeyword ? _parseSchemaExtension() : _parseTypeExtension();
+          final nextToken = _lookahead(1);
+
+          switch (nextToken.kind) {
+            case TokenKind.schemaKeyword:
+              return _parseSchemaExtension();
+
+            case TokenKind.scalarKeyword:
+            case TokenKind.typeKeyword:
+            case TokenKind.interfaceKeyword:
+            case TokenKind.unionKeyword:
+            case TokenKind.enumKeyword:
+            case TokenKind.inputKeyword:
+              return _parseTypeExtension();
+          }
       }
     } else if (tok.kind == TokenKind.bracketl) {
       return _parseSelectionSet();
     } else if (tok.kind == TokenKind.stringValue ||
         tok.kind == TokenKind.blockStringValue) {
-      return _parseTypeDefinition();
+      final nextToken = _lookahead(1);
+
+      switch (nextToken.kind) {
+        case TokenKind.scalarKeyword:
+        case TokenKind.typeKeyword:
+        case TokenKind.interfaceKeyword:
+        case TokenKind.unionKeyword:
+        case TokenKind.enumKeyword:
+        case TokenKind.inputKeyword:
+          return _parseTypeDefinition();
+
+        case TokenKind.directiveKeyword:
+          return _parseDirectiveDefinition();
+      }
     }
 
     throw Exception('Unexpected token ${tok}!');
@@ -154,9 +181,9 @@ class Parser {
         definitions: _parseRootOperationTypeDefinitions());
   }
 
-  Iterable<ast.RootOperationTypeDefinition> _parseRootOperationTypeDefinitions() =>
-    _many(TokenKind.bracketl,
-            _parseRootOperationTypeDefinition, TokenKind.bracketr);
+  Iterable<ast.RootOperationTypeDefinition>
+      _parseRootOperationTypeDefinitions() => _many(TokenKind.bracketl,
+          _parseRootOperationTypeDefinition, TokenKind.bracketr);
 
   ast.RootOperationTypeDefinition _parseRootOperationTypeDefinition() {
     final operation = _parseOperationType();
@@ -357,12 +384,12 @@ class Parser {
 
       case TokenKind.nullKeyword:
         return const ast.NullValue(null);
+
       case TokenKind.trueKeyword:
         return const ast.BooleanValue(true);
+
       case TokenKind.falseKeyword:
         return const ast.BooleanValue(false);
-
-        return _parseEnumValue();
 
       case TokenKind.bracel:
         final values = <ast.Node>[];
@@ -383,6 +410,10 @@ class Parser {
             TokenKind.bracketr);
 
         return ast.ObjectValue(fields);
+    }
+
+    if (TokenKind.isIdentOrKeyword(token.kind)) {
+      return _parseEnumValue();
     }
 
     throw Exception('Unexpected token ${token}!');
@@ -614,6 +645,7 @@ class Parser {
         : null;
 
     _expectToken(TokenKind.inputKeyword);
+
     return ast.InputObjectTypeDefinition();
   }
 
@@ -626,8 +658,40 @@ class Parser {
     return _advanceToken().value;
   }
 
+  ast.DirectiveDefinition _parseDirectiveDefinition() {
+    final description = _isKindOf(TokenKind.stringValue) ||
+            _isKindOf(TokenKind.blockStringValue)
+        ? _parseDescription()
+        : null;
+
+    _expectToken(TokenKind.directiveKeyword);
+    _expectToken(TokenKind.at);
+
+    final name = _parseName();
+    final arguments =
+        _isKindOf(TokenKind.parenl) ? _parseArgumentsDefinition() : null;
+
+    _expectToken(TokenKind.onKeyword);
+
+    final locations = <ast.DirectiveLocation>[];
+
+    do {
+      _isOptionalKindOf(TokenKind.pipe);
+      locations.add(ast.DirectiveLocation.fromString(_parseName()));
+    } while (_peek().kind == TokenKind.pipe);
+
+    return ast.DirectiveDefinition(
+      description: description,
+      name: name,
+      arguments: arguments,
+      locations: locations,
+    );
+  }
+
   ast.Node _parseTypeExtension() {
-    switch (_peek().kind) {
+    final nextToken = _lookahead(1);
+
+    switch (nextToken.kind) {
       case TokenKind.scalarKeyword:
         return _parseScalarTypeExtension();
 
@@ -642,7 +706,7 @@ class Parser {
       case TokenKind.inputKeyword:
         break;
     }
-    
+
     throw Exception('Unexpected token!');
   }
 
@@ -651,10 +715,13 @@ class Parser {
     _expectToken(TokenKind.schemaKeyword);
 
     final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
-    final definitions = _isKindOf(TokenKind.bracketl) ? _parseRootOperationTypeDefinitions() : null;
+    final definitions = _isKindOf(TokenKind.bracketl)
+        ? _parseRootOperationTypeDefinitions()
+        : null;
 
-    if (directives.isEmpty && definitions.isEmpty) {
-      throw Exception('Expected either directives or definitions, found nothing!');
+    if (directives == null && definitions == null) {
+      throw Exception(
+          'Expected either directives or definitions, found nothing!');
     }
 
     return ast.SchemaExtension(

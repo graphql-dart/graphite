@@ -54,8 +54,6 @@ class TokenKind {
       TokenKind._('<INTERFACE_KEYWORD_OR_IDENTIFIER>');
   static const TokenKind mutationKeyword =
       TokenKind._('<MUTATION_KEYWORD_OR_IDENTIFIER>');
-  static const TokenKind nullKeyword =
-      TokenKind._('<NULL_KEYWORD_OR_IDENTIFIER>');
   static const TokenKind onKeyword = TokenKind._('<ON_KEYWORD_OR_IDENTIFIER>');
   static const TokenKind queryKeyword =
       TokenKind._('<QUERY_KEYWORD_OR_IDENTIFIER>');
@@ -69,6 +67,11 @@ class TokenKind {
       TokenKind._('<TYPE_KEYWORD_OR_IDENTIFIER>');
   static const TokenKind unionKeyword =
       TokenKind._('<UNION_KEYWORD_OR_IDENTIFIER>');
+  static const TokenKind directiveKeyword =
+    TokenKind._('<DIRECTIVE_KEYWORD_OR_IDENTIFIER>');
+
+  static const TokenKind nullKeyword =
+  TokenKind._('<NULL_KEYWORD_OR_IDENTIFIER>');
 
   static const TokenKind trueKeyword =
       TokenKind._('<TRUE_KEYWORD_OR_IDENTIFIER>');
@@ -93,6 +96,7 @@ class TokenKind {
       case subscriptionKeyword:
       case typeKeyword:
       case unionKeyword:
+      case directiveKeyword:
         return true;
     }
 
@@ -112,6 +116,7 @@ class TokenKind {
 }
 
 const Map<String, TokenKind> _keywords = {
+  'directive': TokenKind.directiveKeyword,
   'enum': TokenKind.enumKeyword,
   'extend': TokenKind.extendKeyword,
   'fragment': TokenKind.fragmentKeyword,

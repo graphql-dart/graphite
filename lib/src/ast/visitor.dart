@@ -139,6 +139,9 @@ abstract class VisitorBase {
 
       case NodeKind.inputObjectTypeExtension:
         return visitInputObjectTypeExtension(node as InputObjectTypeExtension);
+
+      case NodeKind.directiveDefinition:
+        return visitDirectiveDefinition(node as DirectiveDefinition);
     }
   }
 
@@ -216,6 +219,8 @@ abstract class VisitorBase {
 
   void visitInputValueDefinition(InputValueDefinition node);
 
+  void visitDirectiveDefinition(DirectiveDefinition node);
+
   void visitScalarTypeExtension(ScalarTypeExtension node);
 
   void visitSchemaExtension(SchemaExtension node);
@@ -227,4 +232,5 @@ abstract class VisitorBase {
   void visitObjectTypeExtension(ObjectTypeExtension node);
 
   void visitInputObjectTypeExtension(InputObjectTypeExtension node);
+
 }
