@@ -90,6 +90,8 @@ part 'src/ast/interface_type_extension.dart';
 
 part 'src/ast/enum_type_extension.dart';
 
+part 'src/ast/union_type_extension.dart';
+
 part 'src/ast/input_object_type_extension.dart';
 
 part 'src/ast/object_type_extension.dart';

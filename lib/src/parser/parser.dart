@@ -720,8 +720,10 @@ class Parser {
       case TokenKind.enumKeyword:
         return _parseEnumTypeExtension();
 
-      case TokenKind.typeKeyword:
       case TokenKind.unionKeyword:
+        return _parseUnionTypeExtension();
+
+      case TokenKind.typeKeyword:
       case TokenKind.inputKeyword:
         break;
     }
@@ -794,6 +796,34 @@ class Parser {
 
     return ast.EnumTypeExtension(
         name: name, values: values, directives: directives);
+  }
+
+  ast.Node _parseUnionTypeExtension() {
+    _expectToken(TokenKind.extendKeyword);
+    _expectToken(TokenKind.unionKeyword);
+
+    final name = _parseName();
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    List<ast.NamedType> members;
+
+    if (_isOptionalKindOf(TokenKind.eq)) {
+      members = [];
+
+      do {
+        _isOptionalKindOf(TokenKind.pipe);
+        members.add(_parseNamedType());
+      } while (_isKindOf(TokenKind.pipe));
+    }
+
+    if (directives == null && members == null) {
+      throw Exception('Expected either directives or members, found nothing!');
+    }
+
+    return ast.UnionTypeExtension(
+      name: name,
+      directives: directives,
+      members: members,
+    );
   }
 }
 

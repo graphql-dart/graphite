@@ -60,6 +60,7 @@ enum NodeKind {
   scalarTypeExtension,
   interfaceTypeExtension,
   enumTypeExtension,
+  unionTypeExtension,
   objectTypeExtension,
   inputObjectTypeExtension
 }
@@ -73,7 +74,7 @@ abstract class Node {
 
   void accept(VisitorBase visitor) => visitor.visit(this);
 
-  Map<String, dynamic> toJson();
+  Map<String, Object> toJson();
 }
 
 @immutable

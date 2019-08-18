@@ -814,6 +814,69 @@ void main() {
       });
     });
 
+    group('UnionTypeExtension', () {
+      test('parses simple definition', () {
+        expect(() => convertSourceToMap('extend union Foo FOO'), throws);
+        expect(() => convertSourceToMap('extend union Name'), throws);
+      });
+
+      test('parses definition with directives', () {
+        expect(() => convertSourceToMap('extend union @foo Foo'), throws);
+
+        expect(
+            convertSourceToMap('extend union Foo @foo(bar: "String") @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeExtension(name: 'Foo', directives: [
+                ast.Directive(name: 'foo', arguments: [
+                  ast.Argument(name: 'bar', value: ast.StringValue('String'))
+                ]),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
+      });
+
+      test('parses definition with members', () {
+        expect(() => convertSourceToMap('extend union Foo Bar | Baz'), throws);
+        expect(() => convertSourceToMap('extend union Foo @foo Bar | Baz'),
+            throws);
+
+        expect(
+            convertSourceToMap('extend union Foo = Bar | Baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeExtension(name: 'Foo', members: [
+                ast.NamedType(name: 'Bar'),
+                ast.NamedType(name: 'Baz')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('extend union Foo = | Bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeExtension(name: 'Foo', members: [
+                ast.NamedType(name: 'Bar'),
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap(
+                'extend union Foo @foo @bar @baz @xyz = Bar | Baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeExtension(
+                  name: 'Foo',
+                  directives: [
+                    ast.Directive(name: 'foo'),
+                    ast.Directive(name: 'bar'),
+                    ast.Directive(name: 'baz'),
+                    ast.Directive(name: 'xyz')
+                  ],
+                  members: [
+                    ast.NamedType(name: 'Bar'),
+                    ast.NamedType(name: 'Baz')
+                  ])
+            ])));
+      });
+    });
+
     group('EnumTypeExtension', () {
       test('parses simple extension', () {
         expect(() => convertSourceToMap('extend enum Foo'), throws);
