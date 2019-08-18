@@ -478,6 +478,80 @@ void main() {
       });
     });
 
+    group('UnionTypeDefinition', () {
+      test('parses simple definition', () {
+        expect(() => convertSourceToMap('union Foo FOO'), throws);
+
+        expect(
+            convertSourceToMap('union Foo'),
+            convertAstToMap(const ast.Document(
+                definitions: [ast.UnionTypeDefinition(name: 'Foo')])));
+
+        expect(
+            convertSourceToMap('"""Foo""" union Foo'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeDefinition(description: 'Foo', name: 'Foo')
+            ])));
+      });
+
+      test('parses definition with directives', () {
+        expect(() => convertSourceToMap('union @foo Foo'), throws);
+        expect(() => convertSourceToMap('union @foo Foo'), throws);
+
+        expect(
+            convertSourceToMap('union Foo @foo(bar: "String") @bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeDefinition(name: 'Foo', directives: [
+                ast.Directive(name: 'foo', arguments: [
+                  ast.Argument(name: 'bar', value: ast.StringValue('String'))
+                ]),
+                ast.Directive(name: 'bar')
+              ])
+            ])));
+      });
+
+      test('parses definition with members', () {
+        expect(() => convertSourceToMap('union Foo Bar | Baz'), throws);
+        expect(() => convertSourceToMap('union Foo @foo Bar | Baz'), throws);
+
+        expect(
+            convertSourceToMap('union Foo = Bar | Baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeDefinition(name: 'Foo', members: [
+                ast.NamedType(name: 'Bar'),
+                ast.NamedType(name: 'Baz')
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap('union Foo = | Bar'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeDefinition(name: 'Foo', members: [
+                ast.NamedType(name: 'Bar'),
+              ])
+            ])));
+
+        expect(
+            convertSourceToMap(
+                '"Foo union" union Foo @foo @bar @baz @xyz = Bar | Baz'),
+            convertAstToMap(const ast.Document(definitions: [
+              ast.UnionTypeDefinition(
+                  description: 'Foo union',
+                  name: 'Foo',
+                  directives: [
+                    ast.Directive(name: 'foo'),
+                    ast.Directive(name: 'bar'),
+                    ast.Directive(name: 'baz'),
+                    ast.Directive(name: 'xyz')
+                  ],
+                  members: [
+                    ast.NamedType(name: 'Bar'),
+                    ast.NamedType(name: 'Baz')
+                  ])
+            ])));
+      });
+    });
+
     group('EnumTypeDefinition', () {
       test('parses simple definition', () {
         expect(

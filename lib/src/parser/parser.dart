@@ -439,7 +439,7 @@ class Parser {
     return ast.Variable(name: _parseName());
   }
 
-  Iterable<ast.Directive> _parseDirectives() {
+  Iterable<ast.Directive> _parseDirectives({bool isConst}) {
     final directives = <ast.Directive>[];
 
     do {
@@ -602,7 +602,26 @@ class Parser {
         : null;
 
     _expectToken(TokenKind.unionKeyword);
-    return ast.UnionTypeDefinition();
+
+    final name = _parseName();
+    final directives = _isKindOf(TokenKind.at) ? _parseDirectives() : null;
+    List<ast.NamedType> members;
+
+    if (_isOptionalKindOf(TokenKind.eq)) {
+      members = [];
+
+      do {
+        _isOptionalKindOf(TokenKind.pipe);
+        members.add(_parseNamedType());
+      } while (_isKindOf(TokenKind.pipe));
+    }
+
+    return ast.UnionTypeDefinition(
+      description: description,
+      name: name,
+      directives: directives,
+      members: members,
+    );
   }
 
   ast.Node _parseEnumTypeDefinition() {

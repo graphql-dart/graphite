@@ -13,12 +13,12 @@ class UnionTypeDefinition extends Node {
       {@required this.name,
       this.description,
       this.directives,
-      this.memberTypes});
+      this.members});
 
   final String name;
   final String description;
   final Iterable<Directive> directives;
-  final Iterable<NamedType> memberTypes;
+  final Iterable<NamedType> members;
 
   @override
   NodeKind get kind => NodeKind.unionTypeDefinition;
@@ -29,6 +29,6 @@ class UnionTypeDefinition extends Node {
         'name': name,
         'description': description,
         'directives': directives,
-        'memberTypes': memberTypes,
+        'members': members,
       };
 }
