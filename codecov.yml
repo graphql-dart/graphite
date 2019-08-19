@@ -1,3 +1,8 @@
 ignore:
-  - "lib/src/ast.dart"
-  - "lib/src/ast/*.dart"
+  - graphite_language/lib/ast.dart
+  - graphite_language/lib/src/ast/*.dart
+
+flags:
+  graphite_language:
+    paths:
+      - graphite_language/lib/

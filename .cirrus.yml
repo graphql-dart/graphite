@@ -2,20 +2,15 @@ container:
   image: google/dart
 
 task:
-  pub_cache:
-    folder: $HOME/.pub-cache
-    fingerprint_script: sha256sum pubspec.yaml
-    populate_script: pub get
-
-  resolve_dependencies_script: pub get
-
   matrix:
     - name: Linux Test
       container:
         image: google/dart
 
+      only_if: "changesInclude('graphite_language/**/*.dart')"
+
       env:
+        PACKAGE: graphite_language
         CODECOV_TOKEN: ENCRYPTED[9f6adad90465381118258d1f12b8bde7c91afb0be9af77ec661b7e4bdd0676d1c937a4daae15dcb6209146824b7fa74f]
 
-      test_script: pub run test
-      coverage_script: bash tool/coverage.sh
+      test_script: bash tool/run_test.sh
