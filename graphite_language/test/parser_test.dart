@@ -9,14 +9,18 @@ import 'dart:convert' show json;
 
 import 'package:graphite_language/ast.dart' as ast;
 import 'package:graphite_language/parser.dart';
+import 'package:graphite_language/src/parser/json_printer.dart';
 import 'package:graphite_language/token.dart';
 
 import 'package:test/test.dart';
 
-dynamic convertSourceToMap(String code) =>
-    json.decode(json.encode(parse(Source(body: code))));
+final JsonPrinter printer = JsonPrinter();
 
-dynamic convertAstToMap(ast.Node node) => json.decode(json.encode(node));
+dynamic convertSourceToMap(String code) =>
+    json.decode(json.encode(printer.visitDocument(parse(Source(body: code)))));
+
+dynamic convertAstToMap(ast.Document node) =>
+    json.decode(json.encode(printer.visitDocument(node)));
 
 void main() {
   group('Parser', () {

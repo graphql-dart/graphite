@@ -74,7 +74,7 @@ abstract class Node {
 
   T accept<T>(Visitor<T> visitor);
 
-  Map<String, Object> toJson();
+  // Map<String, Object> toJson();
 }
 
 @immutable
