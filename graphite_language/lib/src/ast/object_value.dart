@@ -19,6 +19,9 @@ class ObjectField extends Node {
   NodeKind get kind => NodeKind.objectField;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitObjectField(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,
@@ -32,4 +35,7 @@ class ObjectValue extends Value<Iterable<ObjectField>> {
 
   @override
   NodeKind get kind => NodeKind.objectValue;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitObjectValue(this);
 }

@@ -21,6 +21,9 @@ class ObjectTypeExtension extends Extension {
   NodeKind get kind => NodeKind.objectTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitObjectTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

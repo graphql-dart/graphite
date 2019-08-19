@@ -13,5 +13,8 @@ class BooleanValue extends Value<bool> {
   const BooleanValue(bool value) : super(value);
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitBooleanValue(this);
+
+  @override
   NodeKind get kind => NodeKind.booleanValue;
 }

@@ -22,6 +22,9 @@ class ObjectTypeDefinition extends Definition {
   NodeKind get kind => NodeKind.objectTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitObjectTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
     'kind': kind.toString(),
     'name': name,

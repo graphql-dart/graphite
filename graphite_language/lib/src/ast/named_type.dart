@@ -17,6 +17,9 @@ class NamedType extends Node {
   NodeKind get kind => NodeKind.namedType;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitNamedType(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

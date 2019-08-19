@@ -24,6 +24,9 @@ class FragmentDefinition extends Definition {
   NodeKind get kind => NodeKind.fragmentDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitFragmentDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

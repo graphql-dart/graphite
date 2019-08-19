@@ -17,6 +17,9 @@ class ListType extends Node {
   NodeKind get kind => NodeKind.listType;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitListType(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'type': type,

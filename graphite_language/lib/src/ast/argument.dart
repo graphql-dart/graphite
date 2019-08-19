@@ -18,6 +18,9 @@ class Argument extends Node {
   NodeKind get kind => NodeKind.argument;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitArgument(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'value': value.toJson(),

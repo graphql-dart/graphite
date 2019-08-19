@@ -25,6 +25,9 @@ class VariableDefinition extends Definition {
   NodeKind get kind => NodeKind.variableDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitVariableDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'type': type,

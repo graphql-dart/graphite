@@ -13,4 +13,7 @@ class EnumValue extends Value<String> {
 
   @override
   NodeKind get kind => NodeKind.enumValue;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitEnumValue(this);
 }

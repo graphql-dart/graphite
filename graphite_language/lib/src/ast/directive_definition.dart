@@ -21,6 +21,9 @@ class DirectiveDefinition extends Definition {
   NodeKind get kind => NodeKind.directiveDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitDirectiveDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'description': description,

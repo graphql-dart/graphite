@@ -8,7 +8,7 @@
 part of graphite.language.ast;
 
 /// https://graphql.github.io/graphql-spec/draft/#InputValueDefinition
-class InputValueDefinition extends Node {
+class InputValueDefinition extends Definition {
   const InputValueDefinition(
       {@required this.name,
       @required this.type,
@@ -24,6 +24,9 @@ class InputValueDefinition extends Node {
 
   @override
   NodeKind get kind => NodeKind.inputValueDefinition;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitInputValueDefinition(this);
 
   @override
   Map<String, Object> toJson() => {

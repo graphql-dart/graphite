@@ -20,6 +20,9 @@ class EnumTypeExtension extends Extension {
   NodeKind get kind => NodeKind.enumTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitEnumTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
     'kind': kind.toString(),
     'name': name,

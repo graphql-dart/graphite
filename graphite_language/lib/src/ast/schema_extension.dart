@@ -11,7 +11,7 @@ part of graphite.language.ast;
 /// from an original schema. 
 ///
 /// https://graphql.github.io/graphql-spec/draft/#SchemaExtension
-class SchemaExtension extends Definition {
+class SchemaExtension extends Extension {
   const SchemaExtension({
     this.definitions,
     this.directives,
@@ -22,6 +22,9 @@ class SchemaExtension extends Definition {
 
   @override
   NodeKind get kind => NodeKind.schemaExtension;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitSchemaExtension(this);
 
   @override
   Map<String, Object> toJson() => {

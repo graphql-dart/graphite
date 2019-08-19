@@ -20,6 +20,9 @@ class ScalarTypeDefinition extends Node {
   NodeKind get kind => NodeKind.scalarTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitScalarTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

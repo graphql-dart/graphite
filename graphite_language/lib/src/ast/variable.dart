@@ -17,6 +17,9 @@ class Variable extends Node {
   NodeKind get kind => NodeKind.variable;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitVariable(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

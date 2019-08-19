@@ -21,6 +21,9 @@ class InterfaceTypeDefinition extends Definition {
   NodeKind get kind => NodeKind.interfaceTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitInterfaceTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

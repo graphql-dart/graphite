@@ -17,6 +17,9 @@ class TypeCondition extends Node {
   NodeKind get kind => NodeKind.typeCondition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitTypeCondition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

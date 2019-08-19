@@ -28,6 +28,9 @@ class InputObjectTypeDefinition extends Definition {
   NodeKind get kind => NodeKind.inputObjectTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitInputObjectTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'description': description,

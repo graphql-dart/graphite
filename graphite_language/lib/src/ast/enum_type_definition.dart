@@ -21,6 +21,9 @@ class EnumTypeDefinition extends Definition {
   NodeKind get kind => NodeKind.enumTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitEnumTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'description': description,

@@ -13,4 +13,7 @@ class IntValue extends Value<int> {
 
   @override
   NodeKind get kind => NodeKind.intValue;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitIntValue(this);
 }

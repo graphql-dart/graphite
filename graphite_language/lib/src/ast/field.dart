@@ -26,6 +26,9 @@ class Field extends Node {
   NodeKind get kind => NodeKind.field;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitField(this);
+
+  @override
   String toString() => 'Field(kind=$kind, name=$name, alias=$alias)';
 
   @override

@@ -24,6 +24,9 @@ class UnionTypeDefinition extends Node {
   NodeKind get kind => NodeKind.unionTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitUnionTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

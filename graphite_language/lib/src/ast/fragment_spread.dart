@@ -18,6 +18,9 @@ class FragmentSpread extends Node {
   NodeKind get kind => NodeKind.fragmentSpread;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitFragmentSpread(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

@@ -18,6 +18,9 @@ class SelectionSet extends Definition {
   NodeKind get kind => NodeKind.selectionSet;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitSelectionSet(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'selections': selections,

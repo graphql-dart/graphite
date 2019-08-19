@@ -20,6 +20,9 @@ class InterfaceTypeExtension extends Extension {
   NodeKind get kind => NodeKind.interfaceTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitInterfaceTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
     'kind': kind.toString(),
     'name': name,

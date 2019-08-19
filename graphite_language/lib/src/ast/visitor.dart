@@ -7,234 +7,139 @@
 
 part of graphite.language.ast;
 
-abstract class VisitorBase {
-  void visit(Node node) {
-    switch (node.kind) {
-      case NodeKind.document:
-        return visitDocument(node as Document);
+abstract class Visitor<T> {
+  /// Visits [Document] node.
+  T visitDocument(Document node);
 
-      case NodeKind.alias:
-        return visitAlias(node as Alias);
+  /// Visits [Alias] node.
+  T visitAlias(Alias node);
 
-      case NodeKind.argument:
-        return visitArgument(node as Argument);
+  /// Visits [Argument] node.
+  T visitArgument(Argument node);
 
-      case NodeKind.booleanValue:
-        return visitBooleanValue(node as BooleanValue);
+  /// Visits [BooleanValue] node.
+  T visitBooleanValue(BooleanValue node);
 
-      case NodeKind.directive:
-        return visitDirective(node as Directive);
+  /// Visits [Directive] node.
+  T visitDirective(Directive node);
 
-      case NodeKind.enumValue:
-        return visitEnumValue(node as EnumValue);
+  /// Visits [EnumValue] node.
+  T visitEnumValue(EnumValue node);
 
-      case NodeKind.field:
-        return visitField(node as Field);
+  /// Visits [Field] node.
+  T visitField(Field node);
 
-      case NodeKind.floatValue:
-        return visitFloatValue(node as FloatValue);
+  /// Visits [FloatValue] node.
+  T visitFloatValue(FloatValue node);
 
-      case NodeKind.fragmentDefinition:
-        return visitFragmentDefinition(node as FragmentDefinition);
+  /// Visits [FragmentDefinition] node.
+  T visitFragmentDefinition(FragmentDefinition node);
 
-      case NodeKind.fragmentSpread:
-        return visitFragmentSpread(node as FragmentSpread);
+  /// Visits [FragmentSpread] node.
+  T visitFragmentSpread(FragmentSpread node);
 
-      case NodeKind.inlineFragment:
-        return visitInlineFragment(node as InlineFragment);
+  /// Visits [InlineFragment] node.
+  T visitInlineFragment(InlineFragment node);
 
-      case NodeKind.intValue:
-        return visitIntValue(node as IntValue);
+  /// Visits [IntValue] node.
+  T visitIntValue(IntValue node);
 
-      case NodeKind.listType:
-        return visitListType(node as ListType);
+  /// Visits [ListType] node.
+  T visitListType(ListType node);
 
-      case NodeKind.listValue:
-        return visitListValue(node as ListValue);
+  /// Visits [ListValue] node.
+  T visitListValue(ListValue node);
 
-      case NodeKind.namedType:
-        return visitNamedType(node as NamedType);
+  /// Visits [NamedType] node.
+  T visitNamedType(NamedType node);
 
-      case NodeKind.nonNullType:
-        return visitNonNullType(node as NonNullType);
+  /// Visits [NonNullType] node.
+  T visitNonNullType(NonNullType node);
 
-      case NodeKind.nullValue:
-        return visitNullValue(node as NullValue);
+  /// Visits [NullValue] node.
+  T visitNullValue(NullValue node);
 
-      case NodeKind.objectField:
-        return visitObjectField(node as ObjectField);
+  /// Visits [ObjectValue] node.
+  T visitObjectValue(ObjectValue node);
 
-      case NodeKind.objectValue:
-        return visitObjectValue(node as ObjectValue);
+  /// Visits [ObjectField] node.
+  T visitObjectField(ObjectField node);
 
-      case NodeKind.operationDefinition:
-        return visitOperationDefinition(node as OperationDefinition);
+  /// Visits [OperationDefinition] node.
+  T visitOperationDefinition(OperationDefinition node);
 
-      case NodeKind.operationType:
-        return visitOperationType(node as OperationType);
+  /// Visits [OperationType] node.
+  T visitOperationType(OperationType node);
 
-      case NodeKind.rootOperationTypeDefinition:
-        return visitRootOperationTypeDefinition(
-            node as RootOperationTypeDefinition);
+  /// Visits [RootOperationTypeDefinition] node.
+  T visitRootOperationTypeDefinition(RootOperationTypeDefinition node);
 
-      case NodeKind.schemaDefinition:
-        return visitSchemaDefinition(node as SchemaDefinition);
+  /// Visits [SelectionSet] node.
+  T visitSelectionSet(SelectionSet node);
 
-      case NodeKind.selectionSet:
-        return visitSelectionSet(node as SelectionSet);
+  /// Visits [StringValue] node.
+  T visitStringValue(StringValue node);
 
-      case NodeKind.stringValue:
-        return visitStringValue(node as StringValue);
+  /// Visits [SchemaDefinition] node.
+  T visitSchemaDefinition(SchemaDefinition node);
 
-      case NodeKind.typeCondition:
-        return visitTypeCondition(node as TypeCondition);
+  /// Visits [TypeCondition] node.
+  T visitTypeCondition(TypeCondition node);
 
-      case NodeKind.variable:
-        return visitVariable(node as Variable);
+  /// Visits [Variable] node.
+  T visitVariable(Variable node);
 
-      case NodeKind.variableDefinition:
-        return visitVariableDefinition(node as VariableDefinition);
+  /// Visits [VariableDefinition] node.
+  T visitVariableDefinition(VariableDefinition node);
 
-      case NodeKind.scalarTypeDefinition:
-        return visitScalarTypeDefinition(node as ScalarTypeDefinition);
+  /// Visits [ScalarTypeDefinition] node.
+  T visitScalarTypeDefinition(ScalarTypeDefinition node);
 
-      case NodeKind.objectTypeDefinition:
-        return visitObjectTypeDefinition(node as ObjectTypeDefinition);
+  /// Visits [ObjectTypeDefinition] node.
+  T visitObjectTypeDefinition(ObjectTypeDefinition node);
 
-      case NodeKind.interfaceTypeDefinition:
-        return visitInterfaceTypeDefinition(node as InterfaceTypeDefinition);
+  /// Visits [InterfaceTypeDefinition] node.
+  T visitInterfaceTypeDefinition(InterfaceTypeDefinition node);
 
-      case NodeKind.unionTypeDefinition:
-        return visitUnionTypeDefinition(node as UnionTypeDefinition);
+  /// Visits [UnionTypeDefinition] node.
+  T visitUnionTypeDefinition(UnionTypeDefinition node);
 
-      case NodeKind.enumTypeDefinition:
-        return visitEnumTypeDefinition(node as EnumTypeDefinition);
+  /// Visits [EnumTypeDefinition] node.
+  T visitEnumTypeDefinition(EnumTypeDefinition node);
 
-      case NodeKind.enumValueDefinition:
-        return visitEnumValueDefinition(node as EnumValueDefinition);
+  /// Visits [EnumValueDefinition] node.
+  T visitEnumValueDefinition(EnumValueDefinition node);
 
-      case NodeKind.inputObjectTypeDefinition:
-        return visitInputTypeDefinition(node as InputObjectTypeDefinition);
+  /// Visits [InputObjectTypeDefinition] node.
+  T visitInputObjectTypeDefinition(InputObjectTypeDefinition node);
 
-      case NodeKind.fieldDefinition:
-        return visitFieldDefinition(node as FieldDefinition);
+  /// Visits [FieldDefinition] node.
+  T visitFieldDefinition(FieldDefinition node);
 
-      case NodeKind.inputValueDefinition:
-        return visitInputValueDefinition(node as InputValueDefinition);
+  /// Visits [InputValueDefinition] node.
+  T visitInputValueDefinition(InputValueDefinition node);
 
-      case NodeKind.schemaExtension:
-        return visitSchemaExtension(node as SchemaExtension);
+  /// Visits [DirectiveDefinition] node.
+  T visitDirectiveDefinition(DirectiveDefinition node);
 
-      case NodeKind.scalarTypeExtension:
-        return visitScalarTypeExtension(node as ScalarTypeExtension);
+  /// Visits [ScalarTypeExtension] node.
+  T visitScalarTypeExtension(ScalarTypeExtension node);
 
-      case NodeKind.interfaceTypeExtension:
-        return visitInterfaceTypeExtension(node as InterfaceTypeExtension);
+  /// Visits [SchemaExtension] node.
+  T visitSchemaExtension(SchemaExtension node);
 
-      case NodeKind.enumTypeExtension:
-        return visitEnumTypeExtension(node as EnumTypeExtension);
+  /// Visits [InterfaceTypeExtension] node.
+  T visitInterfaceTypeExtension(InterfaceTypeExtension node);
 
-      case NodeKind.unionTypeExtension:
-        return visitUnionTypeExtension(node as UnionTypeExtension);
+  /// Visits [UnionTypeExtension] node.
+  T visitUnionTypeExtension(UnionTypeExtension node);
 
-      case NodeKind.objectTypeExtension:
-        return visitObjectTypeExtension(node as ObjectTypeExtension);
+  /// Visits [EnumTypeExtension] node.
+  T visitEnumTypeExtension(EnumTypeExtension node);
 
-      case NodeKind.inputObjectTypeExtension:
-        return visitInputObjectTypeExtension(node as InputObjectTypeExtension);
+  /// Visits [ObjectTypeExtension] node.
+  T visitObjectTypeExtension(ObjectTypeExtension node);
 
-      case NodeKind.directiveDefinition:
-        return visitDirectiveDefinition(node as DirectiveDefinition);
-    }
-  }
-
-  void visitDocument(Document node);
-
-  void visitAlias(Alias node);
-
-  void visitArgument(Argument node);
-
-  void visitBooleanValue(BooleanValue node);
-
-  void visitDirective(Directive node);
-
-  void visitEnumValue(EnumValue node);
-
-  void visitField(Field node);
-
-  void visitFloatValue(FloatValue node);
-
-  void visitFragmentDefinition(FragmentDefinition node);
-
-  void visitFragmentSpread(FragmentSpread node);
-
-  void visitInlineFragment(InlineFragment node);
-
-  void visitIntValue(IntValue node);
-
-  void visitListType(ListType node);
-
-  void visitListValue(ListValue node);
-
-  void visitNamedType(NamedType node);
-
-  void visitNonNullType(NonNullType node);
-
-  void visitNullValue(NullValue node);
-
-  void visitObjectValue(ObjectValue node);
-
-  void visitObjectField(ObjectField node);
-
-  void visitOperationDefinition(OperationDefinition node);
-
-  void visitOperationType(OperationType node);
-
-  void visitRootOperationTypeDefinition(RootOperationTypeDefinition node);
-
-  void visitSelectionSet(SelectionSet node);
-
-  void visitStringValue(StringValue node);
-
-  void visitSchemaDefinition(SchemaDefinition node);
-
-  void visitTypeCondition(TypeCondition node);
-
-  void visitVariable(Variable node);
-
-  void visitVariableDefinition(VariableDefinition node);
-
-  void visitScalarTypeDefinition(ScalarTypeDefinition node);
-
-  void visitObjectTypeDefinition(ObjectTypeDefinition node);
-
-  void visitInterfaceTypeDefinition(InterfaceTypeDefinition node);
-
-  void visitUnionTypeDefinition(UnionTypeDefinition node);
-
-  void visitEnumTypeDefinition(EnumTypeDefinition node);
-
-  void visitEnumValueDefinition(EnumValueDefinition node);
-
-  void visitInputTypeDefinition(InputObjectTypeDefinition node);
-
-  void visitFieldDefinition(FieldDefinition node);
-
-  void visitInputValueDefinition(InputValueDefinition node);
-
-  void visitDirectiveDefinition(DirectiveDefinition node);
-
-  void visitScalarTypeExtension(ScalarTypeExtension node);
-
-  void visitSchemaExtension(SchemaExtension node);
-
-  void visitInterfaceTypeExtension(InterfaceTypeExtension node);
-
-  void visitUnionTypeExtension(UnionTypeExtension node);
-
-  void visitEnumTypeExtension(EnumTypeExtension node);
-
-  void visitObjectTypeExtension(ObjectTypeExtension node);
-
-  void visitInputObjectTypeExtension(InputObjectTypeExtension node);
+  /// Visits [InputObjectTypeExtension] node.
+  T visitInputObjectTypeExtension(InputObjectTypeExtension node);
 }

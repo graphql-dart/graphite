@@ -13,4 +13,7 @@ class NullValue extends Value<Object> {
 
   @override
   NodeKind get kind => NodeKind.nullValue;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitNullValue(this);
 }

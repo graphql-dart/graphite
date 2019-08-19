@@ -20,6 +20,9 @@ class UnionTypeExtension extends Extension {
   NodeKind get kind => NodeKind.unionTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitUnionTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

@@ -23,6 +23,10 @@ class InputObjectTypeExtension extends Extension {
   NodeKind get kind => NodeKind.inputObjectTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) =>
+      visitor.visitInputObjectTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

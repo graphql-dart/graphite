@@ -13,4 +13,7 @@ class ListValue extends Value<List<Node>> {
 
   @override
   NodeKind get kind => NodeKind.listValue;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitListValue(this);
 }

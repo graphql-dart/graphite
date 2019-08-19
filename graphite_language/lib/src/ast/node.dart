@@ -72,7 +72,7 @@ abstract class Node {
   /// Kind of this node.
   NodeKind get kind;
 
-  void accept(VisitorBase visitor) => visitor.visit(this);
+  T accept<T>(Visitor<T> visitor);
 
   Map<String, Object> toJson();
 }

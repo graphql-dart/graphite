@@ -38,6 +38,9 @@ class OperationType extends Node {
   NodeKind get kind => NodeKind.operationType;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitOperationType(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,
@@ -57,12 +60,14 @@ class OperationDefinition extends Definition {
   final OperationType operationType;
   final SelectionSet selectionSet;
   final String name;
-
   final Iterable<VariableDefinition> variableDefinitions;
   final Iterable<Directive> directives;
 
   @override
   NodeKind get kind => NodeKind.operationDefinition;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitOperationDefinition(this);
 
   @override
   Map<String, Object> toJson() => {

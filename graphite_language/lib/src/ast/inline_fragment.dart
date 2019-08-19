@@ -20,6 +20,9 @@ class InlineFragment extends Node {
   NodeKind get kind => NodeKind.inlineFragment;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitInlineFragment(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'typeCondition': typeCondition,

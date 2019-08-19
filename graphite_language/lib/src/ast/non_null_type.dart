@@ -17,6 +17,9 @@ class NonNullType extends Node {
   NodeKind get kind => NodeKind.nonNullType;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitNonNullType(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'type': type,

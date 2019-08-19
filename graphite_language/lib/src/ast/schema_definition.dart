@@ -19,6 +19,10 @@ class RootOperationTypeDefinition extends Definition {
   NodeKind get kind => NodeKind.rootOperationTypeDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) =>
+      visitor.visitRootOperationTypeDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'operation': operation,
@@ -38,6 +42,9 @@ class SchemaDefinition extends Definition {
 
   @override
   NodeKind get kind => NodeKind.schemaDefinition;
+
+  @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitSchemaDefinition(this);
 
   @override
   Map<String, Object> toJson() => {

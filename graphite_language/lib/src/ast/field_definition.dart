@@ -26,6 +26,9 @@ class FieldDefinition extends Node {
   NodeKind get kind => NodeKind.fieldDefinition;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitFieldDefinition(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,

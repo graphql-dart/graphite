@@ -18,6 +18,9 @@ class ScalarTypeExtension extends Extension {
   NodeKind get kind => NodeKind.scalarTypeExtension;
 
   @override
+  T accept<T>(Visitor<T> visitor) => visitor.visitScalarTypeExtension(this);
+
+  @override
   Map<String, Object> toJson() => {
         'kind': kind.toString(),
         'name': name,
