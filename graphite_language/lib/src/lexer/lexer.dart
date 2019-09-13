@@ -257,6 +257,13 @@ class Lexer {
       }
     }
 
+    final code = _peek();
+
+    if (code == 0x2e /* . */ || code == 0x45 /* E */ || code == 0x65 /* e */) {
+      throw _createSyntaxException(
+          getUnexpectedCharExceptionMessage(code), Spanning(start, _position));
+    }
+
     return Token(
       isFloat ? TokenKind.floatValue : TokenKind.integerValue,
       Spanning(start, _position),
