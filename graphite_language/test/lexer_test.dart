@@ -114,6 +114,9 @@ void main() {
                 Position(offset: 1, line: 1, column: 2)),
             value: '0'));
 
+    expect(() => lexOne('01'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('01.23'), throwsA(const TypeMatcher<SyntaxException>()));
+
     expect(
         lexOne('52321'),
         const Token(
@@ -212,7 +215,10 @@ void main() {
         () => lexOne('2e++32'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(() => lexOne('2.'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(() => lexOne('.1'), throwsA(const TypeMatcher<SyntaxException>()));
-    expect(() => lexOne('1.F'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('1.E'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('1.2e3e'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('1.2e3.4'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(() => lexOne('1.23.4'), throwsA(const TypeMatcher<SyntaxException>()));
   });
 
   group('String', () {
@@ -240,6 +246,11 @@ void main() {
               Spanning(Position(offset: 0, line: 1, column: 1),
                   Position(offset: 14, line: 1, column: 15)),
               value: ' with space '));
+
+      expect(
+          () => lexOne('"""'), throwsA(const TypeMatcher<SyntaxException>()));
+      expect(
+          () => lexOne('""""'), throwsA(const TypeMatcher<SyntaxException>()));
     });
 
     test('lexes escape sequence', () {
@@ -345,7 +356,8 @@ void main() {
                   '1| query {\n'
                   '2|     user(username: "\\u123") {\n'
                   '                       ^^^^^\n'
-                  '3|         firstName,\n\n')), skip: true);
+                  '3|         firstName,\n\n')),
+          skip: true);
     });
 
     test('throws on invalid source characters', () {
