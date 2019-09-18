@@ -52,7 +52,11 @@ class Lexer {
 
   SyntaxException _createSyntaxException(String message, Spanning spanning) =>
       SyntaxException(
-          message, source, spanning, shouldHighlightSourceInExceptions);
+        message,
+        source,
+        spanning,
+        shouldHighlightSource: shouldHighlightSourceInExceptions,
+      );
 
   int _peek([int offset = 0]) {
     if (_offset + offset < _body.length) {
@@ -390,7 +394,7 @@ class Lexer {
     final buffer = StringBuffer();
     int code;
 
-    // skipping leading """
+    // skipping leading `"""`
     _next();
     _next();
     _next();
