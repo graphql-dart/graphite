@@ -117,7 +117,6 @@ void main() {
     expect(() => lexOne('01'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(
         () => lexOne('01.23'), throwsA(const TypeMatcher<SyntaxException>()));
-
     expect(
         lexOne('52321'),
         const Token(
