@@ -1,7 +1,7 @@
 name: graphite_language
 version: 0.1.0
 author: Roman Vanesyan <romain.vanesyan@gmail.com>
-license: BSD-3-Clause
+license: MIT
 
 environment:
   sdk: '>=2.1.0 <3.0.0'
