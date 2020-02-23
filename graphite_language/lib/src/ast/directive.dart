@@ -12,11 +12,4 @@ class Directive extends Definition {
 
   @override
   T accept<T>(Visitor<T> visitor) => visitor.visitDirective(this);
-
-  @override
-  Map<String, Object> toJson() => {
-        'kind': kind.toString(),
-        'name': name,
-        'arguments': arguments,
-      };
 }

@@ -11,10 +11,4 @@ class Alias extends Node {
 
   @override
   T accept<T>(Visitor<T> visitor) => visitor.visitAlias(this);
-
-  @override
-  Map<String, Object> toJson() => {
-        'kind': kind.toString(),
-        'name': name,
-      };
 }

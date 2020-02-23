@@ -10,10 +10,4 @@ class Document extends Node {
 
   @override
   T accept<T>(Visitor<T> visitor) => visitor.visitDocument(this);
-
-  @override
-  Map<String, Object> toJson() => {
-        'kind': kind.toString(),
-        'definitions': definitions,
-      };
 }
