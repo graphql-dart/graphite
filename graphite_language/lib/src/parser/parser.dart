@@ -96,10 +96,10 @@ class Parser {
   }
 
   ast.Node _parseDefinition() {
-    final tok = _peek();
+    final token = _peek();
 
-    if (TokenKind.isKeyword(tok.kind)) {
-      switch (tok.kind) {
+    if (TokenKind.isKeyword(token.kind)) {
+      switch (token.kind) {
         // https://graphql.github.io/graphql-spec/draft/#ExecutableDefinition
         // ------------------------------------------------------------------
         case TokenKind.queryKeyword:
@@ -143,10 +143,10 @@ class Parser {
               return _parseTypeExtension();
           }
       }
-    } else if (tok.kind == TokenKind.bracketl) {
+    } else if (token.kind == TokenKind.bracketl) {
       return _parseSelectionSet();
-    } else if (tok.kind == TokenKind.stringValue ||
-        tok.kind == TokenKind.blockStringValue) {
+    } else if (token.kind == TokenKind.stringValue ||
+        token.kind == TokenKind.blockStringValue) {
       final nextToken = _lookahead(1);
 
       switch (nextToken.kind) {
@@ -163,7 +163,7 @@ class Parser {
       }
     }
 
-    throw Exception('Unexpected token ${tok}!');
+    throw Exception('Unexpected token $token!');
   }
 
   ast.SchemaDefinition _parseSchemaDefinition() {
@@ -398,7 +398,7 @@ class Parser {
       return _parseEnumValue();
     }
 
-    throw Exception('Unexpected token ${token}!');
+    throw Exception('Unexpected token $token!');
   }
 
   ast.ListValue _parseListValue({bool isConst}) => ast.ListValue(_many(
