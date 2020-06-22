@@ -1,6 +1,5 @@
-name: graphite_language
+name: graphite
 version: 0.1.0
-author: Roman Vanesyan <romain.vanesyan@gmail.com>
 license: MIT
 
 environment:

@@ -1,9 +1,9 @@
 import 'dart:convert' show Encoding, utf8;
 import 'dart:io' show File, Platform;
 
-import 'package:graphite_language/ast.dart' as ast;
-import 'package:graphite_language/parser.dart' show parse;
-import 'package:graphite_language/token.dart' show Source;
+import 'package:graphite/ast.dart' as ast;
+import 'package:graphite/parser.dart' show parse;
+import 'package:graphite/token.dart' show Source;
 
 Future<ast.Document> parseFile(Uri uri, {Encoding encoding = utf8}) async {
   final file = File.fromUri(uri);

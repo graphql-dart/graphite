@@ -1,5 +1,5 @@
-import 'package:graphite_language/lexer.dart';
-import 'package:graphite_language/token.dart';
+import 'package:graphite/lexer.dart';
+import 'package:graphite/token.dart';
 
 void main() {
   final l = Lexer(

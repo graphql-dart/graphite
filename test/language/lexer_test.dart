@@ -2,10 +2,10 @@ import 'dart:convert' show utf8;
 
 import 'package:test/test.dart';
 
-import 'package:graphite_language/lexer.dart';
-import 'package:graphite_language/token.dart';
+import 'package:graphite/lexer.dart';
+import 'package:graphite/token.dart';
 
-import 'package:graphite_language/exceptions.dart' show SyntaxException;
+import 'package:graphite/exceptions.dart' show SyntaxException;
 
 Iterable<Token> lex(String body,
     // ignore: avoid_positional_boolean_parameters
@@ -450,9 +450,9 @@ void main() {
 
       expect(
           lexOne('''"""
-          
-          
-          
+
+
+
           """'''),
           const Token(
               TokenKind.blockStringValue,

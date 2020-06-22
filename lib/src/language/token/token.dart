@@ -1,4 +1,4 @@
-import 'package:graphite_language/token.dart' show Spanning;
+import 'package:graphite/token.dart' show Spanning;
 
 class TokenKind {
   const TokenKind._(this._name);

@@ -1,7 +1,7 @@
-import 'package:graphite_language/token.dart';
-import 'package:graphite_language/exceptions.dart';
+import 'package:graphite/token.dart';
+import 'package:graphite/exceptions.dart';
 
-import 'package:graphite_language/src/lexer/utils.dart';
+import 'utils.dart';
 
 const Map<int, TokenKind> _punctuators = {
   0x21: TokenKind.bang, // !

@@ -1,6 +1,6 @@
-import 'package:graphite_language/ast.dart' as ast;
-import 'package:graphite_language/lexer.dart' show Lexer;
-import 'package:graphite_language/token.dart' show Source, Token, TokenKind;
+import 'package:graphite/ast.dart' as ast;
+import 'package:graphite/lexer.dart' show Lexer;
+import 'package:graphite/token.dart' show Source, Token, TokenKind;
 
 class Parser {
   Parser(this.source);

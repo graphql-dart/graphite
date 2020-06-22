@@ -1,8 +1,8 @@
 import 'dart:convert' show json;
 
-import 'package:graphite_language/ast.dart' as ast;
-import 'package:graphite_language/parser.dart';
-import 'package:graphite_language/token.dart';
+import 'package:graphite/ast.dart' as ast;
+import 'package:graphite/parser.dart';
+import 'package:graphite/token.dart';
 
 import 'package:test/test.dart';
 

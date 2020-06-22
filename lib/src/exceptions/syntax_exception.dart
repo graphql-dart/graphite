@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:graphite_language/token.dart' show Source, Spanning;
+import 'package:graphite/token.dart' show Source, Spanning;
 
 final _newline = RegExp('\r\n|[\r\n]');
 
