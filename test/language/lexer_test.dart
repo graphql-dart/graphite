@@ -9,7 +9,7 @@ import 'package:graphite/exceptions.dart' show SyntaxException;
 
 Iterable<Token> lex(String body,
     // ignore: avoid_positional_boolean_parameters
-    [bool shouldHighlightSourceInExceptions = false]) {
+    [bool shouldHighlightSourceInExceptions = true]) {
   final lexer = Lexer(Source(body: body),
       shouldHighlightSourceInExceptions: shouldHighlightSourceInExceptions);
 
@@ -17,7 +17,7 @@ Iterable<Token> lex(String body,
 }
 
 // ignore: avoid_positional_boolean_parameters
-Token lexOne(String body, [bool shouldHighlightSourceInExceptions = false]) =>
+Token lexOne(String body, [bool shouldHighlightSourceInExceptions = true]) =>
     lex(body, shouldHighlightSourceInExceptions).first;
 
 void main() {
@@ -108,8 +108,8 @@ void main() {
             value: '0'));
 
     expect(() => lexOne('01'), throwsA(const TypeMatcher<SyntaxException>()));
-    expect(() => lexOne('01.23'), throwsA(const TypeMatcher<SyntaxException>()));
-
+    expect(
+        () => lexOne('01.23'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(
         lexOne('52321'),
         const Token(
@@ -209,9 +209,12 @@ void main() {
     expect(() => lexOne('2.'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(() => lexOne('.1'), throwsA(const TypeMatcher<SyntaxException>()));
     expect(() => lexOne('1.E'), throwsA(const TypeMatcher<SyntaxException>()));
-    expect(() => lexOne('1.2e3e'), throwsA(const TypeMatcher<SyntaxException>()));
-    expect(() => lexOne('1.2e3.4'), throwsA(const TypeMatcher<SyntaxException>()));
-    expect(() => lexOne('1.23.4'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('1.2e3e'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('1.2e3.4'), throwsA(const TypeMatcher<SyntaxException>()));
+    expect(
+        () => lexOne('1.23.4'), throwsA(const TypeMatcher<SyntaxException>()));
   });
 
   group('String', () {
@@ -335,22 +338,19 @@ void main() {
           throwsA(const TypeMatcher<SyntaxException>()));
 
       expect(
-          () => lex(
-              'query {\n'
+          () => lex('query {\n'
               '    user(username: "\\u123") {\n'
               '        firstName,\n'
               '        lastName\n'
               '    }\n'
-              '}\n',
-              true),
+              '}\n'),
           throwsA(predicate<SyntaxException>((e) =>
               e.toString() ==
               'SyntaxException: Unknown unicode escape sequence: "\\u123"\n'
                   '1| query {\n'
                   '2|     user(username: "\\u123") {\n'
                   '                       ^^^^^\n'
-                  '3|         firstName,\n\n')),
-          skip: true);
+                  '3|         firstName,\n\n')));
     });
 
     test('throws on invalid source characters', () {
